@@ -6,7 +6,7 @@
   <title>MQRZ Team · студия Roblox игр</title>
   <!-- Font Awesome 6 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <!-- Google Fonts: Inter + Clash Display -->
+  <!-- Google Fonts: Inter -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
   <style>
     * {
@@ -24,7 +24,7 @@
       overflow-x: hidden;
     }
 
-    /* Улучшенный кастомный скролл */
+    /* Кастомный скролл */
     ::-webkit-scrollbar {
       width: 12px;
     }
@@ -34,7 +34,6 @@
     }
     ::-webkit-scrollbar-thumb {
       background: linear-gradient(145deg, #3478b0, #1b4b77);
-      border-radius: 0px;
       border: 2px solid #0b1b2b;
       box-shadow: inset 0 0 6px #a0d0ff77;
     }
@@ -50,7 +49,7 @@
 
     /* Улучшенный эффект стекла как у Apple */
     .glass-effect {
-      background: rgba(12, 25, 45, 0.3);
+      background: rgba(12, 25, 45, 0.2);
       backdrop-filter: blur(20px) saturate(200%);
       -webkit-backdrop-filter: blur(20px) saturate(200%);
       border: 1px solid rgba(74, 144, 226, 0.2);
@@ -58,7 +57,7 @@
       box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), inset 0 0 40px rgba(74, 144, 226, 0.1);
     }
 
-    /* хедер с улучшенным стеклом */
+    /* Хедер с улучшенным стеклом */
     header {
       padding: 18px 0;
       background: rgba(3, 15, 26, 0.2);
@@ -140,7 +139,6 @@
       transition: 0.3s;
       padding: 8px 0;
       border-bottom: 3px solid transparent;
-      text-shadow: 0 0 5px transparent;
       letter-spacing: 0.3px;
       position: relative;
     }
@@ -182,7 +180,7 @@
       filter: drop-shadow(0 0 15px #6aaaff);
     }
 
-    /* Герой с улучшенными эффектами */
+    /* Герой */
     .hero {
       padding: 80px 0 100px;
       background: radial-gradient(ellipse at 70% 20%, #0a2a44, #01060c 80%);
@@ -395,7 +393,7 @@
       100% { box-shadow: 0 50px 60px -20px black, inset 0 -10px 30px #004488; }
     }
 
-    /* Общие секции с улучшенным стеклом */
+    /* Секции */
     section {
       padding: 110px 0;
       position: relative;
@@ -447,10 +445,10 @@
       border-radius: 0 20px 20px 0;
     }
 
-    /* Карточки игр с улучшенным стеклом */
+    /* Карточки игр */
     .games-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
       gap: 45px;
       margin-top: 40px;
     }
@@ -540,24 +538,42 @@
       box-shadow: 0 0 20px #1d4c79;
     }
 
-    .stats {
-      display: flex;
-      gap: 30px;
-      border-top: 2px dashed rgba(49, 93, 132, 0.5);
-      padding-top: 25px;
-      margin-top: 15px;
-      font-size: 17px;
+    .game-desc {
+      color: #b7c9e0;
+      margin-bottom: 25px;
+      font-size: 16px;
     }
 
-    /* Магазин товаров вместо сервисов */
-    .features {
+    .game-btn {
+      display: inline-block;
+      background: rgba(47, 128, 237, 0.2);
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(47, 128, 237, 0.5);
+      color: white;
+      padding: 12px 30px;
+      border-radius: 60px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: 0.3s;
+      margin-top: 15px;
+    }
+
+    .game-btn:hover {
+      background: rgba(47, 128, 237, 0.5);
+      border-color: #2f80ed;
+      transform: scale(1.05);
+      box-shadow: 0 0 30px #2f80ed;
+    }
+
+    /* Магазин товаров */
+    .store-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 40px;
       margin: 50px 0;
     }
 
-    .feature-item {
+    .store-item {
       background: rgba(12, 26, 40, 0.3);
       backdrop-filter: blur(20px) saturate(200%);
       padding: 45px 30px;
@@ -570,7 +586,7 @@
       overflow: hidden;
     }
 
-    .feature-item::before {
+    .store-item::before {
       content: '';
       position: absolute;
       top: -50%;
@@ -582,17 +598,17 @@
       transition: opacity 0.5s;
     }
 
-    .feature-item:hover::before {
+    .store-item:hover::before {
       opacity: 1;
     }
 
-    .feature-item:hover {
+    .store-item:hover {
       border-color: rgba(115, 185, 255, 0.5);
       box-shadow: 0 0 60px #1d6cb0, 0 30px 30px -15px black;
       transform: scale(1.02) translateY(-5px);
     }
 
-    .feature-item i {
+    .store-item i {
       font-size: 60px;
       color: #7eb9ff;
       text-shadow: 0 0 40px #0077ff;
@@ -604,7 +620,7 @@
       to { transform: rotate(360deg); }
     }
 
-    .feature-item .license-badge {
+    .license-badge {
       display: inline-block;
       background: rgba(255, 215, 0, 0.1);
       border: 1px solid gold;
@@ -612,15 +628,43 @@
       padding: 5px 15px;
       border-radius: 30px;
       font-size: 14px;
-      margin-top: 15px;
+      margin: 15px 0;
       font-weight: 600;
     }
 
-    /* команда с выделенным CEO */
+    .store-price {
+      font-size: 32px;
+      font-weight: 900;
+      color: #7eb9ff;
+      margin: 15px 0;
+    }
+
+    .store-btn {
+      display: inline-block;
+      background: rgba(47, 128, 237, 0.2);
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(47, 128, 237, 0.5);
+      color: white;
+      padding: 12px 30px;
+      border-radius: 60px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: 0.3s;
+    }
+
+    .store-btn:hover {
+      background: rgba(47, 128, 237, 0.5);
+      border-color: #2f80ed;
+      transform: scale(1.05);
+      box-shadow: 0 0 30px #2f80ed;
+    }
+
+    /* Команда */
     .team-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 45px;
+      margin-top: 50px;
     }
 
     .member {
@@ -633,6 +677,7 @@
       transition: 0.4s;
       position: relative;
       overflow: hidden;
+      text-align: center;
     }
 
     .member::after {
@@ -657,19 +702,21 @@
     }
 
     .ceo-member {
-      background: linear-gradient(145deg, rgba(255, 215, 0, 0.1), rgba(16, 36, 51, 0.5));
+      background: linear-gradient(145deg, rgba(255, 215, 0, 0.15), rgba(16, 36, 51, 0.5));
       border: 2px solid gold;
       transform: scale(1.05);
+      position: relative;
     }
 
     .ceo-member::before {
       content: '👑';
       position: absolute;
-      top: -10px;
-      right: -10px;
-      font-size: 50px;
+      top: -15px;
+      right: -15px;
+      font-size: 60px;
       transform: rotate(20deg);
-      opacity: 0.8;
+      opacity: 0.9;
+      filter: drop-shadow(0 0 20px gold);
     }
 
     .member-avatar {
@@ -702,6 +749,10 @@
       font-weight: 600;
     }
 
+    .member-social {
+      margin-top: 15px;
+    }
+
     .member-social a {
       color: #7d9fc7;
       margin: 0 8px;
@@ -716,7 +767,7 @@
       filter: drop-shadow(0 0 15px #6aaaff);
     }
 
-    /* контактный блок с улучшенным стеклом */
+    /* Контактный блок */
     .contact-section {
       background: rgba(12, 30, 48, 0.2);
       backdrop-filter: blur(30px) saturate(250%);
@@ -745,12 +796,21 @@
       animation: rotate 20s linear infinite;
     }
 
+    .contact-text {
+      position: relative;
+      z-index: 1;
+    }
+
     .contact-text h3 {
       font-size: 52px;
       font-weight: 900;
       text-shadow: 0 0 30px #004c99;
-      position: relative;
-      z-index: 1;
+    }
+
+    .contact-text p {
+      font-size: 22px;
+      color: #bbdbff;
+      margin-top: 15px;
     }
 
     .contact-btn {
@@ -799,7 +859,7 @@
       transform: scale(1.03);
     }
 
-    /* футер с улучшенным стеклом */
+    /* Футер */
     footer {
       background: rgba(2, 10, 19, 0.3);
       backdrop-filter: blur(20px);
@@ -813,6 +873,11 @@
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 30px;
       align-items: center;
+    }
+
+    .footer-copy {
+      color: #6f8aa8;
+      font-size: 14px;
     }
 
     .footer-links a {
@@ -851,6 +916,7 @@
       .hero-avatar i { font-size: 200px; }
       .contact-btn { font-size: 22px; padding: 20px 40px; }
       .nav-links { gap: 20px; }
+      .header-flex { flex-direction: column; gap: 20px; }
     }
   </style>
 </head>
@@ -864,15 +930,16 @@
       </div>
       <div class="nav-links">
         <a href="#games">Проекты</a>
-        <!-- Сервисы заменены на Магазин -->
         <a href="#store">Магазин</a>
-        <!-- Команда пока убрана, заменим на временную ссылку -->
+        <a href="#team">Команда</a>
         <a href="#contact">Связаться</a>
       </div>
       <div class="social-header">
-        <!-- Только TikTok и Telegram -->
-        <a href="https://t.me/ваш_канал" target="_blank"><i class="fab fa-telegram"></i></a>
+        <!-- Интересные символы вместо Discord -->
+        <a href="https://t.me/ваш_канал" target="_blank"><i class="fas fa-paper-plane"></i></a>
         <a href="https://tiktok.com/@ваш_аккаунт" target="_blank"><i class="fab fa-tiktok"></i></a>
+        <a href="#" target="_blank"><i class="fas fa-cube"></i></a>
+        <a href="#" target="_blank"><i class="fas fa-bolt"></i></a>
       </div>
     </div>
   </header>
@@ -884,9 +951,7 @@
         <h2>create · build ·<br>dominate</h2>
         <p>MQRZ Team — команда разработчиков, создающая игры в Roblox.</p>
         <div class="btn-group">
-          <!-- Портфолио открывается в новой вкладке -->
-          <a href="https://ваш-сайт-портфолио.com" target="_blank" class="btn btn-primary"><i class="fas fa-crown"></i> портфолио</a>
-          <!-- Связаться ведет в Telegram -->
+          <a href="https://www.roblox.com/games/120818895602064/" target="_blank" class="btn btn-primary"><i class="fas fa-crown"></i> портфолио</a>
           <a href="https://t.me/ваш_канал" target="_blank" class="btn btn-outline"><i class="fab fa-telegram"></i> telegram</a>
         </div>
       </div>
@@ -898,18 +963,170 @@
 
   <section id="games">
     <div class="container">
-      <h2 class="section-title">актуальные миры</h2>
-      <div class="section-sub">проекты с высоким онлайном и уникальным дизайном</div>
+      <h2 class="section-title">наши игры</h2>
+      <div class="section-sub">актуальные проекты на Roblox</div>
       <div class="games-grid">
+        <!-- NektoEm - анонимный чат -->
         <div class="game-card">
-          <i class="fas fa-cloud-sun game-icon"></i>
-          <h3>Skyblock MQRZ</h3>
-          <div class="game-tag"><i class="fas fa-tag"></i> симулятор / экономика</div>
-          <p class="game-desc">Острова, прокачка, аукцион и уникальные генераторы. Более 1.2М визитов.</p>
-          <div class="stats">
-            <span><i class="fas fa-users"></i> 18.4K игроков</span>
-            <span><i class="fas fa-star" style="color: gold;"></i> 4.9 ★</span>
-            <span><i class="fas fa-gamepad"></i> обновление 2.4</span>
+          <i class="fas fa-comment-dots game-icon"></i>
+          <h3>NektoEm</h3>
+          <div class="game-tag"><i class="fas fa-tag"></i> анонимный чат</div>
+          <p class="game-desc">Анонимное общение, уникальные возможности и стильный дизайн. Присоединяйся!</p>
+          <a href="https://www.roblox.com/games/120818895602064/" target="_blank" class="game-btn"><i class="fas fa-play"></i> Играть</a>
+        </div>
+        
+        <!-- Вкусно — и точка | Томск -->
+        <div class="game-card">
+          <i class="fas fa-utensils game-icon"></i>
+          <h3>Вкусно — и точка | Томск</h3>
+          <div class="game-tag"><i class="fas fa-tag"></i> симулятор / ресторан</div>
+          <p class="game-desc">Реалистичный симулятор ресторана в Томске. Готовь, обслуживай, развивай!</p>
+          <a href="https://www.roblox.com/games/106492845069834/" target="_blank" class="game-btn"><i class="fas fa-play"></i> Играть</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="store" style="background: #07121f;">
+    <div class="container">
+      <h2 class="section-title">магазин товаров</h2>
+      <div class="section-sub">лицензионные товары для Roblox Studio</div>
+      <div class="store-grid">
+        <div class="store-item">
+          <i class="fas fa-crown"></i>
+          <h3>Премиум скрипты</h3>
+          <div class="license-badge">ЛИЦЕНЗИЯ PRO</div>
+          <p>Готовые скрипты для ваших игр с открытым кодом</p>
+          <div class="store-price">2,499₽</div>
+          <a href="#" class="store-btn">Купить</a>
+        </div>
+        
+        <div class="store-item">
+          <i class="fas fa-paint-brush"></i>
+          <h3>3D модели</h3>
+          <div class="license-badge">ЛИЦЕНЗИЯ STANDARD</div>
+          <p>Эксклюзивные модели для Roblox Studio</p>
+          <div class="store-price">1,999₽</div>
+          <a href="#" class="store-btn">Купить</a>
+        </div>
+        
+        <div class="store-item">
+          <i class="fas fa-gamepad"></i>
+          <h3>Геймпассы</h3>
+          <div class="license-badge">ЛИЦЕНЗИЯ PREMIUM</div>
+          <p>Готовые решения для монетизации</p>
+          <div class="store-price">3,499₽</div>
+          <a href="#" class="store-btn">Купить</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="team">
+    <div class="container">
+      <h2 class="section-title">наша команда</h2>
+      <div class="section-sub">люди, которые создают лучшие игры</div>
+      <div class="team-grid">
+        <!-- antvidxx - CEO и основатель (выделен) -->
+        <div class="member ceo-member">
+          <div class="member-avatar"><i class="fas fa-crown"></i></div>
+          <h4>antvidxx</h4>
+          <div class="member-role">CEO & Основатель</div>
+          <p style="color: #b7c9e0; margin-bottom: 15px;">Создатель MQRZ Team</p>
+          <div class="member-social">
+            <a href="#"><i class="fab fa-telegram"></i></a>
+            <a href="#"><i class="fab fa-github"></i></a>
+            <a href="#"><i class="fas fa-cube"></i></a>
           </div>
         </div>
-        <
+
+        <div class="member">
+          <div class="member-avatar"><i class="fas fa-user-astronaut"></i></div>
+          <h4>MQRZ</h4>
+          <div class="member-role">лид-скриптер</div>
+          <div class="member-social">
+            <a href="#"><i class="fab fa-telegram"></i></a>
+            <a href="#"><i class="fab fa-github"></i></a>
+          </div>
+        </div>
+
+        <div class="member">
+          <div class="member-avatar"><i class="fas fa-user-ninja"></i></div>
+          <h4>NiktoXA</h4>
+          <div class="member-role">ведущий билдер</div>
+          <div class="member-social">
+            <a href="#"><i class="fab fa-telegram"></i></a>
+            <a href="#"><i class="fas fa-paint-brush"></i></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact">
+    <div class="container">
+      <div class="contact-section">
+        <div class="contact-text">
+          <h3>присоединяйся к нам!</h3>
+          <p>Мы основаны в 2026 году. Ждем тебя в Telegram</p>
+        </div>
+        <a href="https://t.me/ваш_канал" target="_blank" class="contact-btn">
+          <i class="fas fa-paper-plane"></i> Telegram <i class="fas fa-arrow-right"></i>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container footer-grid">
+      <div class="footer-copy">
+        <i class="fas fa-cube" style="color:#3e8edd;"></i> MQRZ Team · since 2026<br>© 2026 все права защищены
+      </div>
+      <div class="footer-links">
+        <a href="#">правила</a>
+        <a href="#">вакансии</a>
+        <a href="#">политика</a>
+      </div>
+      <div class="footer-social">
+        <i class="fas fa-paper-plane"></i>
+        <i class="fab fa-tiktok"></i>
+        <i class="fas fa-cube"></i>
+        <i class="fas fa-bolt"></i>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Анимация появления при скролле
+    const animatedElements = document.querySelectorAll('.game-card, .store-item, .member, .contact-section');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.opacity = 1;
+          entry.target.style.transform = 'translateY(0)';
+        }
+      });
+    }, { threshold: 0.2 });
+    
+    animatedElements.forEach(el => {
+      el.style.opacity = 0;
+      el.style.transform = 'translateY(30px)';
+      el.style.transition = 'opacity 0.6s, transform 0.6s';
+      observer.observe(el);
+    });
+
+    // Плавный скролл для якорей
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        const href = this.getAttribute('href');
+        if (href === "#") return;
+        const target = document.querySelector(href);
+        if (target) {
+          e.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+    });
+  </script>
+</body>
+</html>
