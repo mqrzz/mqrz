@@ -24,7 +24,6 @@
       overflow-x: hidden;
     }
 
-    /* Кастомный скролл */
     ::-webkit-scrollbar {
       width: 12px;
     }
@@ -445,6 +444,78 @@
       border-radius: 0 20px 20px 0;
     }
 
+    /* Новая секция статуса */
+    .status-section {
+      background: rgba(12, 26, 40, 0.3);
+      backdrop-filter: blur(15px) saturate(180%);
+      border-radius: 50px;
+      padding: 40px;
+      margin: 40px 0 60px;
+      border: 1px solid rgba(74, 144, 226, 0.3);
+      text-align: center;
+    }
+
+    .status-title {
+      font-size: 36px;
+      font-weight: 800;
+      margin-bottom: 30px;
+      background: linear-gradient(135deg, #fff, #aad0ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .status-grid {
+      display: flex;
+      justify-content: center;
+      gap: 60px;
+      flex-wrap: wrap;
+    }
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      font-size: 24px;
+      font-weight: 600;
+    }
+
+    .status-dot {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
+
+    .status-dot.green {
+      background: #00ff88;
+      box-shadow: 0 0 20px #00ff88;
+      animation: pulse 2s infinite;
+    }
+
+    .status-dot.red {
+      background: #ff4d4d;
+      box-shadow: 0 0 20px #ff4d4d;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.8; transform: scale(1.1); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    .status-text {
+      display: flex;
+      align-items: center;
+      color: #b7c9e0;
+    }
+
+    .status-value {
+      color: white;
+      font-weight: 700;
+      margin-left: 5px;
+    }
+
     /* Карточки игр */
     .games-grid {
       display: grid;
@@ -582,98 +653,71 @@
       box-shadow: 0 0 30px #2f80ed;
     }
 
-    /* Магазин товаров */
-    .store-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 40px;
-      margin: 50px 0;
-    }
-
-    .store-item {
+    /* Магазин - обновленный дизайн со списком */
+    .store-list {
       background: rgba(12, 26, 40, 0.3);
-      backdrop-filter: blur(20px) saturate(200%);
-      padding: 45px 30px;
-      border-radius: 60px 20px 60px 20px;
-      border: 1px solid rgba(49, 92, 136, 0.3);
-      box-shadow: 0 0 40px #002c55, 0 20px 30px -20px black;
-      transition: 0.4s;
+      backdrop-filter: blur(15px) saturate(180%);
+      border-radius: 50px;
+      padding: 50px;
+      margin: 40px 0;
+      border: 1px solid rgba(74, 144, 226, 0.3);
       text-align: center;
-      position: relative;
-      overflow: hidden;
     }
 
-    .store-item::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle, rgba(74, 144, 226, 0.1), transparent);
-      opacity: 0;
-      transition: opacity 0.5s;
+    .store-items {
+      display: flex;
+      justify-content: center;
+      gap: 80px;
+      margin: 40px 0;
+      flex-wrap: wrap;
     }
 
-    .store-item:hover::before {
-      opacity: 1;
+    .store-item-simple {
+      text-align: center;
     }
 
-    .store-item:hover {
-      border-color: rgba(115, 185, 255, 0.5);
-      box-shadow: 0 0 60px #1d6cb0, 0 30px 30px -15px black;
-      transform: scale(1.02) translateY(-5px);
-    }
-
-    .store-item i {
-      font-size: 60px;
+    .store-item-simple i {
+      font-size: 50px;
       color: #7eb9ff;
-      text-shadow: 0 0 40px #0077ff;
-      animation: spin 10s linear infinite;
+      margin-bottom: 15px;
     }
 
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
+    .store-item-simple h3 {
+      font-size: 28px;
+      font-weight: 700;
+      color: white;
     }
 
-    .store-platform {
-      display: inline-block;
-      background: rgba(0, 200, 0, 0.1);
-      border: 1px solid #00c851;
+    .store-item-simple p {
       color: #00c851;
-      padding: 5px 15px;
-      border-radius: 30px;
-      font-size: 14px;
-      margin: 15px 0;
-      font-weight: 600;
+      font-size: 16px;
+      margin-top: 5px;
     }
 
-    .store-price {
-      font-size: 32px;
-      font-weight: 900;
-      color: #7eb9ff;
-      margin: 15px 0;
-    }
-
-    .store-btn {
+    .store-main-link {
       display: inline-block;
       background: rgba(47, 128, 237, 0.2);
-      backdrop-filter: blur(5px);
-      border: 1px solid rgba(47, 128, 237, 0.5);
-      color: white;
-      padding: 12px 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 20px 60px;
       border-radius: 60px;
+      font-size: 24px;
+      font-weight: 800;
+      color: white;
       text-decoration: none;
-      font-weight: 600;
       transition: 0.3s;
+      margin-top: 30px;
     }
 
-    .store-btn:hover {
-      background: rgba(47, 128, 237, 0.5);
-      border-color: #2f80ed;
+    .store-main-link:hover {
+      background: rgba(47, 128, 237, 0.4);
+      border-color: rgba(255, 255, 255, 0.3);
       transform: scale(1.05);
       box-shadow: 0 0 30px #2f80ed;
+    }
+
+    .store-main-link i {
+      margin-left: 15px;
     }
 
     /* Команда */
@@ -737,24 +781,13 @@
     }
 
     .member-avatar {
-      width: 120px;
-      height: 120px;
-      margin: 0 auto 20px;
-      border-radius: 50%;
-      overflow: hidden;
-      border: 3px solid #4d9fff;
-      box-shadow: 0 0 30px #0066cc;
-    }
-
-    .member-avatar img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+      font-size: 80px;
+      margin-bottom: 20px;
+      color: #7eb9ff;
     }
 
     .ceo-member .member-avatar {
-      border-color: gold;
-      box-shadow: 0 0 40px gold;
+      color: gold;
     }
 
     .member h4 {
@@ -774,22 +807,27 @@
       font-weight: 600;
     }
 
-    .member-social {
+    .profile-link {
+      display: inline-block;
+      background: rgba(47, 128, 237, 0.2);
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      padding: 10px 25px;
+      border-radius: 60px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: 0.3s;
       margin-top: 15px;
     }
 
-    .member-social a {
-      color: #7d9fc7;
-      margin: 0 8px;
-      font-size: 20px;
-      transition: 0.3s;
-      display: inline-block;
+    .profile-link:hover {
+      background: rgba(47, 128, 237, 0.4);
+      border-color: rgba(255, 255, 255, 0.3);
     }
 
-    .member-social a:hover {
-      color: white;
-      transform: scale(1.2) rotate(360deg);
-      filter: drop-shadow(0 0 15px #6aaaff);
+    .profile-link i {
+      margin-right: 8px;
     }
 
     /* Контактный блок */
@@ -929,6 +967,8 @@
       .nav-links { gap: 20px; }
       .header-flex { flex-direction: column; gap: 20px; }
       .footer-grid { flex-direction: column; gap: 20px; }
+      .status-grid { gap: 30px; }
+      .store-items { gap: 40px; }
     }
   </style>
 </head>
@@ -948,8 +988,8 @@
       </div>
       <div class="social-header">
         <!-- Только TikTok и Telegram -->
-        <a href="https://t.me/ваш_канал" target="_blank"><i class="fab fa-telegram"></i></a>
-        <a href="https://tiktok.com/@ваш_аккаунт" target="_blank"><i class="fab fa-tiktok"></i></a>
+        <a href="#" target="_blank"><i class="fab fa-telegram"></i></a>
+        <a href="#" target="_blank"><i class="fab fa-tiktok"></i></a>
       </div>
     </div>
   </header>
@@ -962,8 +1002,8 @@
         <p>MQRZ Team — команда разработчиков, создающая игры в Roblox.</p>
         <div class="btn-group">
           <!-- Кнопка Основатель с ссылкой на профиль -->
-          <a href="https://www.roblox.com/users/10155321154/profile" target="_blank" class="btn btn-primary"><i class="fas fa-crown"></i> основатель</a>
-          <a href="https://t.me/ваш_канал" target="_blank" class="btn btn-outline"><i class="fab fa-telegram"></i> telegram</a>
+          <a href="#" target="_blank" class="btn btn-primary"><i class="fas fa-crown"></i> основатель</a>
+          <a href="#" target="_blank" class="btn btn-outline"><i class="fab fa-telegram"></i> telegram</a>
         </div>
       </div>
       <div class="hero-avatar">
@@ -977,6 +1017,22 @@
     <div class="container">
       <h2 class="section-title">наши игры</h2>
       <div class="section-sub">актуальные проекты на Roblox</div>
+      
+      <!-- Новая секция статуса -->
+      <div class="status-section">
+        <h3 class="status-title">Статус MQRZ Team</h3>
+        <div class="status-grid">
+          <div class="status-item">
+            <div class="status-dot green"></div>
+            <span class="status-text">Все игры: <span class="status-value">2 активны</span></span>
+          </div>
+          <div class="status-item">
+            <div class="status-dot green"></div>
+            <span class="status-text">Общий статус: <span class="status-value">Работаем</span></span>
+          </div>
+        </div>
+      </div>
+
       <div class="games-grid">
         <!-- NektoEm - анонимный чат -->
         <div class="game-card">
@@ -1023,33 +1079,29 @@
     <div class="container">
       <h2 class="section-title">магазин товаров</h2>
       <div class="section-sub">товары продаются на Playerok</div>
-      <div class="store-grid">
-        <div class="store-item">
-          <i class="fas fa-crown"></i>
-          <h3>Премиум скрипты</h3>
-          <div class="store-platform">PLAYEROK</div>
-          <p>Готовые скрипты для ваших игр с открытым кодом</p>
-          <div class="store-price">2,499₽</div>
-          <a href="https://playerok.com/profile/Roblox-shop-WP/products" target="_blank" class="store-btn">Купить на Playerok</a>
+      
+      <div class="store-list">
+        <div class="store-items">
+          <div class="store-item-simple">
+            <i class="fas fa-gamepad"></i>
+            <h3>Игры</h3>
+            <p>PLAYEROK</p>
+          </div>
+          <div class="store-item-simple">
+            <i class="fas fa-code"></i>
+            <h3>Скрипты</h3>
+            <p>PLAYEROK</p>
+          </div>
+          <div class="store-item-simple">
+            <i class="fas fa-cube"></i>
+            <h3>Модели</h3>
+            <p>PLAYEROK</p>
+          </div>
         </div>
         
-        <div class="store-item">
-          <i class="fas fa-paint-brush"></i>
-          <h3>3D модели</h3>
-          <div class="store-platform">PLAYEROK</div>
-          <p>Эксклюзивные модели для Roblox Studio</p>
-          <div class="store-price">1,999₽</div>
-          <a href="https://playerok.com/profile/Roblox-shop-WP/products" target="_blank" class="store-btn">Купить на Playerok</a>
-        </div>
-        
-        <div class="store-item">
-          <i class="fas fa-gamepad"></i>
-          <h3>Геймпассы</h3>
-          <div class="store-platform">PLAYEROK</div>
-          <p>Готовые решения для монетизации</p>
-          <div class="store-price">3,499₽</div>
-          <a href="https://playerok.com/profile/Roblox-shop-WP/products" target="_blank" class="store-btn">Купить на Playerok</a>
-        </div>
+        <a href="https://playerok.com/profile/Roblox-shop-WP/products" target="_blank" class="store-main-link">
+          Перейти на Playerok <i class="fas fa-arrow-right"></i>
+        </a>
       </div>
     </div>
   </section>
@@ -1059,42 +1111,39 @@
       <h2 class="section-title">наша команда</h2>
       <div class="section-sub">люди, которые создают лучшие игры</div>
       <div class="team-grid">
-        <!-- antvidxx - CEO и основатель с аватаркой -->
+        <!-- antvidxx - CEO и основатель -->
         <div class="member ceo-member">
           <div class="member-avatar">
-            <img src="https://tr.rbxcdn.com/30day/AvatarHeadshot-10155321154-150x150-8A8F6A9F83D5D7B0F3B2E5F1C4D3E2A1-Png" alt="antvidxx" onerror="this.src='https://via.placeholder.com/120x120/0a2a44/ffffff?text=CEO'">
+            <i class="fas fa-crown"></i>
           </div>
           <h4>antvidxx</h4>
           <div class="member-role">CEO & Основатель</div>
           <p style="color: #b7c9e0; margin-bottom: 15px;">Создатель MQRZ Team</p>
-          <div class="member-social">
-            <a href="https://t.me/ваш_канал" target="_blank"><i class="fab fa-telegram"></i></a>
-            <a href="https://www.roblox.com/users/10155321154/profile" target="_blank"><i class="fab fa-roblox"></i></a>
-          </div>
+          <a href="#" target="_blank" class="profile-link">
+            <i class="fas fa-external-link-alt"></i> перейти в профиль
+          </a>
         </div>
 
         <div class="member">
           <div class="member-avatar">
-            <img src="https://tr.rbxcdn.com/30day/AvatarHeadshot-123456789-150x150-8A8F6A9F83D5D7B0F3B2E5F1C4D3E2A1-Png" alt="MQRZ" onerror="this.src='https://via.placeholder.com/120x120/0a2a44/ffffff?text=MQRZ'">
+            <i class="fas fa-code"></i>
           </div>
           <h4>MQRZ</h4>
           <div class="member-role">лид-скриптер</div>
-          <div class="member-social">
-            <a href="https://t.me/ваш_канал" target="_blank"><i class="fab fa-telegram"></i></a>
-            <a href="#"><i class="fab fa-github"></i></a>
-          </div>
+          <a href="#" target="_blank" class="profile-link">
+            <i class="fas fa-external-link-alt"></i> перейти в профиль
+          </a>
         </div>
 
         <div class="member">
           <div class="member-avatar">
-            <img src="https://tr.rbxcdn.com/30day/AvatarHeadshot-987654321-150x150-8A8F6A9F83D5D7B0F3B2E5F1C4D3E2A1-Png" alt="NiktoXA" onerror="this.src='https://via.placeholder.com/120x120/0a2a44/ffffff?text=NiktoXA'">
+            <i class="fas fa-paint-brush"></i>
           </div>
           <h4>NiktoXA</h4>
           <div class="member-role">ведущий билдер</div>
-          <div class="member-social">
-            <a href="https://t.me/ваш_канал" target="_blank"><i class="fab fa-telegram"></i></a>
-            <a href="#"><i class="fas fa-paint-brush"></i></a>
-          </div>
+          <a href="#" target="_blank" class="profile-link">
+            <i class="fas fa-external-link-alt"></i> перейти в профиль
+          </a>
         </div>
       </div>
     </div>
@@ -1107,7 +1156,7 @@
           <h3>Поддержка</h3>
           <p>Ждем тебя в Telegram</p>
         </div>
-        <a href="https://t.me/ваш_канал" target="_blank" class="contact-btn">
+        <a href="#" target="_blank" class="contact-btn">
           <i class="fab fa-telegram"></i> Telegram <i class="fas fa-arrow-right"></i>
         </a>
       </div>
@@ -1117,25 +1166,37 @@
   <footer>
     <div class="container footer-grid">
       <div class="footer-copy">
-        <i class="fas fa-cube" style="color:#3e8edd;"></i> MQRZ Team · since 2026<br>© 2026 все права защищены
+        <i class="fas fa-cube" style="color:#3e8edd;"></i> MQRZ Team<br>© 2026 все права защищены
       </div>
       <div class="footer-social">
-        <a href="https://t.me/ваш_канал" target="_blank"><i class="fab fa-telegram"></i></a>
-        <a href="https://tiktok.com/@ваш_аккаунт" target="_blank"><i class="fab fa-tiktok"></i></a>
+        <a href="#" target="_blank"><i class="fab fa-telegram"></i></a>
+        <a href="#" target="_blank"><i class="fab fa-tiktok"></i></a>
       </div>
     </div>
   </footer>
 
   <script>
-    // Инструкции по настройке сайта:
-    // 1. Замените 'ваш_канал' на ссылку вашего Telegram канала (в нескольких местах)
-    // 2. Замените 'ваш_аккаунт' на ссылку вашего TikTok
-    // 3. Ссылка на Playerok уже настроена: https://playerok.com/profile/Roblox-shop-WP/products
-    // 4. Ссылка на профиль основателя: https://www.roblox.com/users/10155321154/profile
-    // 5. Аватарки загружаются с Roblox, если не загрузятся - покажутся заглушки
+    // ИНСТРУКЦИЯ ПО НАСТРОЙКЕ ССЫЛОК:
+    // ================================
+    // 1. Telegram ссылки: найдите все '#' в href у иконок telegram и замените на вашу ссылку
+    //    Пример: <a href="https://t.me/ваш_канал" target="_blank">
+    //
+    // 2. TikTok ссылки: найдите все '#' в href у иконок tiktok и замените на вашу ссылку
+    //    Пример: <a href="https://tiktok.com/@ваш_аккаунт" target="_blank">
+    //
+    // 3. Ссылка на основателя: в кнопке "основатель" и в профиле antvidxx 
+    //    замените '#' на https://www.roblox.com/users/10155321154/profile
+    //
+    // 4. Ссылки на профили MQRZ и NiktoXA: замените '#' на ссылки их профилей Roblox
+    //
+    // 5. Ссылки на игры уже вставлены:
+    //    - NektoEm: https://www.roblox.com/games/120818895602064/
+    //    - Вкусно — и точка: https://www.roblox.com/games/106492845069834/
+    //
+    // 6. Ссылка на Playerok: https://playerok.com/profile/Roblox-shop-WP/products (уже вставлена)
 
     // Анимация появления при скролле
-    const animatedElements = document.querySelectorAll('.game-card, .store-item, .member, .contact-section');
+    const animatedElements = document.querySelectorAll('.game-card, .store-list, .member, .contact-section, .status-section');
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
