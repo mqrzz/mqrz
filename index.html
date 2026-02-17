@@ -1135,39 +1135,41 @@
         flex-direction: column;
         align-items: center;
         text-align: center;
+        gap: 8px;
       }
 
       .header-left {
         justify-content: center;
-        margin-bottom: 5px;
-        gap: 15px;
+        margin-bottom: 2px;
+        gap: 10px;
       }
 
       .logo {
         flex-direction: column;
-        gap: 5px;
+        gap: 2px;
       }
 
       .logo-icon {
-        font-size: 40px;
+        font-size: 32px;
       }
 
       .logo h1 {
-        font-size: 28px;
+        font-size: 22px;
       }
 
       .logo span {
-        font-size: 14px;
+        font-size: 12px;
+        padding: 2px 8px;
       }
 
       .nav-links {
-        gap: 12px;
-        margin: 5px 0;
+        gap: 8px;
+        margin: 0;
       }
 
       .nav-links a {
-        font-size: 14px;
-        padding: 5px 0;
+        font-size: 13px;
+        padding: 4px 0;
       }
 
       .hero-info h2 {
@@ -1369,11 +1371,20 @@
       }
 
       .nav-links {
-        gap: 8px;
+        gap: 5px;
       }
 
       .nav-links a {
-        font-size: 13px;
+        font-size: 11px;
+        padding: 3px 0;
+      }
+
+      .logo-icon {
+        font-size: 28px;
+      }
+
+      .logo h1 {
+        font-size: 20px;
       }
     }
   </style>
@@ -1398,12 +1409,12 @@
         </div>
       </div>
       <div class="nav-links">
-        <a href="#games">Проекты</a>
-        <a href="#store">Магазин</a>
-        <a href="#team">Команда</a>
-        <a href="#news">Новости</a>
-        <a href="#faq">FAQ</a>
-        <a href="#contact">Поддержка</a>
+        <a href="#games" data-ru="Проекты" data-en="Projects">Проекты</a>
+        <a href="#store" data-ru="Магазин" data-en="Store">Магазин</a>
+        <a href="#team" data-ru="Команда" data-en="Team">Команда</a>
+        <a href="#news" data-ru="Новости" data-en="News">Новости</a>
+        <a href="#faq" data-ru="FAQ" data-en="FAQ">FAQ</a>
+        <a href="#contact" data-ru="Поддержка" data-en="Support">Поддержка</a>
       </div>
     </div>
   </header>
@@ -1683,19 +1694,19 @@
     // ИНСТРУКЦИЯ ПО НАСТРОЙКЕ ССЫЛОК:
     // ================================
     // 1. Telegram ссылки: найдите все '#' в href и замените на вашу ссылку:
-    //    - В кнопке "telegram" в герое (строка 655)
-    //    - В кнопке "Telegram" в поддержке (строка 1108)
-    //    - В иконках Telegram в футере (строка 1116)
+    //    - В кнопке "telegram" в герое (строка 671)
+    //    - В кнопке "Telegram" в поддержке (строка 1124)
+    //    - В иконках Telegram в футере (строка 1132)
     //    Пример: <a href="https://t.me/ваш_канал" target="_blank">
     //
-    // 2. TikTok ссылки: найдите '#' в href у иконок tiktok в футере (строка 1117)
+    // 2. TikTok ссылки: найдите '#' в href у иконок tiktok в футере (строка 1133)
     //    Пример: <a href="https://tiktok.com/@ваш_аккаунт" target="_blank">
     //
-    // 3. Ссылка на основателя: найдите '#' в href у кнопки "основатель" (строка 654)
-    //    и в профиле antvidxx (строка 836)
+    // 3. Ссылка на основателя: найдите '#' в href у кнопки "основатель" (строка 670)
+    //    и в профиле antvidxx (строка 852)
     //    замените '#' на https://www.roblox.com/users/10155321154/profile
     //
-    // 4. Ссылки на профили MQRZ и NiktoXA: найдите '#' в href (строки 850 и 864)
+    // 4. Ссылки на профили MQRZ и NiktoXA: найдите '#' в href (строки 866 и 880)
     //    замените на ссылки их профилей Roblox
 
     // Кнопка наверх
