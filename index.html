@@ -544,6 +544,23 @@
       font-size: 16px;
     }
 
+    .rating {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .stars {
+      color: gold;
+      font-size: 20px;
+    }
+
+    .rating-number {
+      color: #b7c9e0;
+      font-size: 16px;
+    }
+
     .game-btn {
       display: inline-block;
       background: rgba(47, 128, 237, 0.2);
@@ -620,11 +637,11 @@
       to { transform: rotate(360deg); }
     }
 
-    .license-badge {
+    .store-platform {
       display: inline-block;
-      background: rgba(255, 215, 0, 0.1);
-      border: 1px solid gold;
-      color: gold;
+      background: rgba(0, 200, 0, 0.1);
+      border: 1px solid #00c851;
+      color: #00c851;
       padding: 5px 15px;
       border-radius: 30px;
       font-size: 14px;
@@ -720,22 +737,30 @@
     }
 
     .member-avatar {
-      font-size: 100px;
-      line-height: 1;
-      color: #adceff;
-      filter: drop-shadow(0 0 30px #0066cc);
-      animation: avatarFloat 3s infinite;
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 20px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 3px solid #4d9fff;
+      box-shadow: 0 0 30px #0066cc;
     }
 
-    @keyframes avatarFloat {
-      0% { transform: translateY(0px); }
-      50% { transform: translateY(-5px); }
-      100% { transform: translateY(0px); }
+    .member-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
 
     .ceo-member .member-avatar {
-      color: gold;
-      filter: drop-shadow(0 0 40px gold);
+      border-color: gold;
+      box-shadow: 0 0 40px gold;
+    }
+
+    .member h4 {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 5px;
     }
 
     .member-role {
@@ -869,9 +894,8 @@
     }
 
     .footer-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 30px;
+      display: flex;
+      justify-content: space-between;
       align-items: center;
     }
 
@@ -880,34 +904,21 @@
       font-size: 14px;
     }
 
-    .footer-links a {
-      color: #9eb7d3;
-      text-decoration: none;
-      font-weight: 500;
-      margin: 0 15px;
-      transition: 0.3s;
+    .footer-social {
+      display: flex;
+      gap: 30px;
     }
 
-    .footer-links a:hover {
-      color: white;
-      text-shadow: 0 0 15px #60a5ff;
-    }
-
-    .footer-social i {
-      font-size: 32px;
-      margin-left: 30px;
+    .footer-social a {
       color: #568ac9;
+      font-size: 28px;
       transition: 0.4s;
-      border: 2px solid transparent;
-      border-radius: 50%;
-      padding: 8px;
     }
 
-    .footer-social i:hover {
+    .footer-social a:hover {
       color: white;
-      border-color: #5194f0;
-      box-shadow: 0 0 40px #2974cc;
-      transform: rotate(360deg) scale(1.1);
+      transform: scale(1.2) rotate(360deg);
+      filter: drop-shadow(0 0 20px #2974cc);
     }
 
     /* Адаптация */
@@ -917,6 +928,7 @@
       .contact-btn { font-size: 22px; padding: 20px 40px; }
       .nav-links { gap: 20px; }
       .header-flex { flex-direction: column; gap: 20px; }
+      .footer-grid { flex-direction: column; gap: 20px; }
     }
   </style>
 </head>
@@ -932,14 +944,12 @@
         <a href="#games">Проекты</a>
         <a href="#store">Магазин</a>
         <a href="#team">Команда</a>
-        <a href="#contact">Связаться</a>
+        <a href="#contact">Поддержка</a>
       </div>
       <div class="social-header">
-        <!-- Интересные символы вместо Discord -->
-        <a href="https://t.me/ваш_канал" target="_blank"><i class="fas fa-paper-plane"></i></a>
+        <!-- Только TikTok и Telegram -->
+        <a href="https://t.me/ваш_канал" target="_blank"><i class="fab fa-telegram"></i></a>
         <a href="https://tiktok.com/@ваш_аккаунт" target="_blank"><i class="fab fa-tiktok"></i></a>
-        <a href="#" target="_blank"><i class="fas fa-cube"></i></a>
-        <a href="#" target="_blank"><i class="fas fa-bolt"></i></a>
       </div>
     </div>
   </header>
@@ -947,16 +957,18 @@
   <section class="hero">
     <div class="container hero-flex">
       <div class="hero-info">
-        <span class="hero-badge"><i class="fas fa-bolt"></i> next-gen roblox studio</span>
+        <span class="hero-badge"><i class="fas fa-bolt"></i> roblox studio</span>
         <h2>create · build ·<br>dominate</h2>
         <p>MQRZ Team — команда разработчиков, создающая игры в Roblox.</p>
         <div class="btn-group">
-          <a href="https://www.roblox.com/games/120818895602064/" target="_blank" class="btn btn-primary"><i class="fas fa-crown"></i> портфолио</a>
+          <!-- Кнопка Основатель с ссылкой на профиль -->
+          <a href="https://www.roblox.com/users/10155321154/profile" target="_blank" class="btn btn-primary"><i class="fas fa-crown"></i> основатель</a>
           <a href="https://t.me/ваш_канал" target="_blank" class="btn btn-outline"><i class="fab fa-telegram"></i> telegram</a>
         </div>
       </div>
       <div class="hero-avatar">
-        <i class="fas fa-ghost"></i>
+        <!-- Символ вместо Discord -->
+        <i class="fas fa-cube"></i>
       </div>
     </div>
   </section>
@@ -971,6 +983,16 @@
           <i class="fas fa-comment-dots game-icon"></i>
           <h3>NektoEm</h3>
           <div class="game-tag"><i class="fas fa-tag"></i> анонимный чат</div>
+          <div class="rating">
+            <div class="stars">
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star-half-alt"></i>
+            </div>
+            <span class="rating-number">4.5 ★</span>
+          </div>
           <p class="game-desc">Анонимное общение, уникальные возможности и стильный дизайн. Присоединяйся!</p>
           <a href="https://www.roblox.com/games/120818895602064/" target="_blank" class="game-btn"><i class="fas fa-play"></i> Играть</a>
         </div>
@@ -980,6 +1002,16 @@
           <i class="fas fa-utensils game-icon"></i>
           <h3>Вкусно — и точка | Томск</h3>
           <div class="game-tag"><i class="fas fa-tag"></i> симулятор / ресторан</div>
+          <div class="rating">
+            <div class="stars">
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+            </div>
+            <span class="rating-number">5.0 ★</span>
+          </div>
           <p class="game-desc">Реалистичный симулятор ресторана в Томске. Готовь, обслуживай, развивай!</p>
           <a href="https://www.roblox.com/games/106492845069834/" target="_blank" class="game-btn"><i class="fas fa-play"></i> Играть</a>
         </div>
@@ -990,33 +1022,33 @@
   <section id="store" style="background: #07121f;">
     <div class="container">
       <h2 class="section-title">магазин товаров</h2>
-      <div class="section-sub">лицензионные товары для Roblox Studio</div>
+      <div class="section-sub">товары продаются на Playerok</div>
       <div class="store-grid">
         <div class="store-item">
           <i class="fas fa-crown"></i>
           <h3>Премиум скрипты</h3>
-          <div class="license-badge">ЛИЦЕНЗИЯ PRO</div>
+          <div class="store-platform">PLAYEROK</div>
           <p>Готовые скрипты для ваших игр с открытым кодом</p>
           <div class="store-price">2,499₽</div>
-          <a href="#" class="store-btn">Купить</a>
+          <a href="https://playerok.com/profile/Roblox-shop-WP/products" target="_blank" class="store-btn">Купить на Playerok</a>
         </div>
         
         <div class="store-item">
           <i class="fas fa-paint-brush"></i>
           <h3>3D модели</h3>
-          <div class="license-badge">ЛИЦЕНЗИЯ STANDARD</div>
+          <div class="store-platform">PLAYEROK</div>
           <p>Эксклюзивные модели для Roblox Studio</p>
           <div class="store-price">1,999₽</div>
-          <a href="#" class="store-btn">Купить</a>
+          <a href="https://playerok.com/profile/Roblox-shop-WP/products" target="_blank" class="store-btn">Купить на Playerok</a>
         </div>
         
         <div class="store-item">
           <i class="fas fa-gamepad"></i>
           <h3>Геймпассы</h3>
-          <div class="license-badge">ЛИЦЕНЗИЯ PREMIUM</div>
+          <div class="store-platform">PLAYEROK</div>
           <p>Готовые решения для монетизации</p>
           <div class="store-price">3,499₽</div>
-          <a href="#" class="store-btn">Купить</a>
+          <a href="https://playerok.com/profile/Roblox-shop-WP/products" target="_blank" class="store-btn">Купить на Playerok</a>
         </div>
       </div>
     </div>
@@ -1027,35 +1059,40 @@
       <h2 class="section-title">наша команда</h2>
       <div class="section-sub">люди, которые создают лучшие игры</div>
       <div class="team-grid">
-        <!-- antvidxx - CEO и основатель (выделен) -->
+        <!-- antvidxx - CEO и основатель с аватаркой -->
         <div class="member ceo-member">
-          <div class="member-avatar"><i class="fas fa-crown"></i></div>
+          <div class="member-avatar">
+            <img src="https://tr.rbxcdn.com/30day/AvatarHeadshot-10155321154-150x150-8A8F6A9F83D5D7B0F3B2E5F1C4D3E2A1-Png" alt="antvidxx" onerror="this.src='https://via.placeholder.com/120x120/0a2a44/ffffff?text=CEO'">
+          </div>
           <h4>antvidxx</h4>
           <div class="member-role">CEO & Основатель</div>
           <p style="color: #b7c9e0; margin-bottom: 15px;">Создатель MQRZ Team</p>
           <div class="member-social">
-            <a href="#"><i class="fab fa-telegram"></i></a>
-            <a href="#"><i class="fab fa-github"></i></a>
-            <a href="#"><i class="fas fa-cube"></i></a>
+            <a href="https://t.me/ваш_канал" target="_blank"><i class="fab fa-telegram"></i></a>
+            <a href="https://www.roblox.com/users/10155321154/profile" target="_blank"><i class="fab fa-roblox"></i></a>
           </div>
         </div>
 
         <div class="member">
-          <div class="member-avatar"><i class="fas fa-user-astronaut"></i></div>
+          <div class="member-avatar">
+            <img src="https://tr.rbxcdn.com/30day/AvatarHeadshot-123456789-150x150-8A8F6A9F83D5D7B0F3B2E5F1C4D3E2A1-Png" alt="MQRZ" onerror="this.src='https://via.placeholder.com/120x120/0a2a44/ffffff?text=MQRZ'">
+          </div>
           <h4>MQRZ</h4>
           <div class="member-role">лид-скриптер</div>
           <div class="member-social">
-            <a href="#"><i class="fab fa-telegram"></i></a>
+            <a href="https://t.me/ваш_канал" target="_blank"><i class="fab fa-telegram"></i></a>
             <a href="#"><i class="fab fa-github"></i></a>
           </div>
         </div>
 
         <div class="member">
-          <div class="member-avatar"><i class="fas fa-user-ninja"></i></div>
+          <div class="member-avatar">
+            <img src="https://tr.rbxcdn.com/30day/AvatarHeadshot-987654321-150x150-8A8F6A9F83D5D7B0F3B2E5F1C4D3E2A1-Png" alt="NiktoXA" onerror="this.src='https://via.placeholder.com/120x120/0a2a44/ffffff?text=NiktoXA'">
+          </div>
           <h4>NiktoXA</h4>
           <div class="member-role">ведущий билдер</div>
           <div class="member-social">
-            <a href="#"><i class="fab fa-telegram"></i></a>
+            <a href="https://t.me/ваш_канал" target="_blank"><i class="fab fa-telegram"></i></a>
             <a href="#"><i class="fas fa-paint-brush"></i></a>
           </div>
         </div>
@@ -1067,11 +1104,11 @@
     <div class="container">
       <div class="contact-section">
         <div class="contact-text">
-          <h3>присоединяйся к нам!</h3>
-          <p>Мы основаны в 2026 году. Ждем тебя в Telegram</p>
+          <h3>Поддержка</h3>
+          <p>Ждем тебя в Telegram</p>
         </div>
         <a href="https://t.me/ваш_канал" target="_blank" class="contact-btn">
-          <i class="fas fa-paper-plane"></i> Telegram <i class="fas fa-arrow-right"></i>
+          <i class="fab fa-telegram"></i> Telegram <i class="fas fa-arrow-right"></i>
         </a>
       </div>
     </div>
@@ -1082,21 +1119,21 @@
       <div class="footer-copy">
         <i class="fas fa-cube" style="color:#3e8edd;"></i> MQRZ Team · since 2026<br>© 2026 все права защищены
       </div>
-      <div class="footer-links">
-        <a href="#">правила</a>
-        <a href="#">вакансии</a>
-        <a href="#">политика</a>
-      </div>
       <div class="footer-social">
-        <i class="fas fa-paper-plane"></i>
-        <i class="fab fa-tiktok"></i>
-        <i class="fas fa-cube"></i>
-        <i class="fas fa-bolt"></i>
+        <a href="https://t.me/ваш_канал" target="_blank"><i class="fab fa-telegram"></i></a>
+        <a href="https://tiktok.com/@ваш_аккаунт" target="_blank"><i class="fab fa-tiktok"></i></a>
       </div>
     </div>
   </footer>
 
   <script>
+    // Инструкции по настройке сайта:
+    // 1. Замените 'ваш_канал' на ссылку вашего Telegram канала (в нескольких местах)
+    // 2. Замените 'ваш_аккаунт' на ссылку вашего TikTok
+    // 3. Ссылка на Playerok уже настроена: https://playerok.com/profile/Roblox-shop-WP/products
+    // 4. Ссылка на профиль основателя: https://www.roblox.com/users/10155321154/profile
+    // 5. Аватарки загружаются с Roblox, если не загрузятся - покажутся заглушки
+
     // Анимация появления при скролле
     const animatedElements = document.querySelectorAll('.game-card, .store-item, .member, .contact-section');
     const observer = new IntersectionObserver((entries) => {
