@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
   <title>MQRZ Team · студия Roblox игр</title>
   <!-- Font Awesome 6 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -46,14 +46,68 @@
       padding: 0 40px;
     }
 
-    /* Улучшенный эффект стекла как у Apple */
-    .glass-effect {
-      background: rgba(12, 25, 45, 0.2);
-      backdrop-filter: blur(20px) saturate(200%);
-      -webkit-backdrop-filter: blur(20px) saturate(200%);
-      border: 1px solid rgba(74, 144, 226, 0.2);
-      border-radius: 30px;
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), inset 0 0 40px rgba(74, 144, 226, 0.1);
+    /* Кнопка наверх */
+    #scrollToTop {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      width: 50px;
+      height: 50px;
+      background: rgba(47, 128, 237, 0.3);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      transition: 0.3s;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    #scrollToTop.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    #scrollToTop:hover {
+      background: rgba(47, 128, 237, 0.6);
+      transform: translateY(-5px);
+    }
+
+    /* Языковой переключатель */
+    .language-switcher {
+      display: flex;
+      gap: 10px;
+      margin-left: 20px;
+    }
+
+    .lang-btn {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #bcd6ff;
+      padding: 5px 10px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: 0.3s;
+    }
+
+    .lang-btn.active {
+      background: rgba(47, 128, 237, 0.3);
+      border-color: #2f80ed;
+      color: white;
+    }
+
+    .lang-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
     }
 
     /* Хедер с улучшенным стеклом */
@@ -73,6 +127,15 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+      flex-wrap: wrap;
     }
 
     .logo {
@@ -128,6 +191,8 @@
     .nav-links {
       display: flex;
       gap: 42px;
+      flex-wrap: wrap;
+      justify-content: center;
     }
 
     .nav-links a {
@@ -165,18 +230,21 @@
       text-shadow: 0 0 8px #60a5ff;
     }
 
+    .social-header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
     .social-header a {
       color: #bcd6ff;
-      font-size: 26px;
-      margin-left: 27px;
+      font-size: 24px;
       transition: 0.3s;
-      filter: drop-shadow(0 0 8px #2f7ad1);
     }
 
     .social-header a:hover {
       color: white;
-      transform: scale(1.2) rotate(360deg);
-      filter: drop-shadow(0 0 15px #6aaaff);
+      transform: scale(1.2);
     }
 
     /* Герой */
@@ -444,7 +512,7 @@
       border-radius: 0 20px 20px 0;
     }
 
-    /* Новая секция статуса */
+    /* Секция статуса */
     .status-section {
       background: rgba(12, 26, 40, 0.3);
       backdrop-filter: blur(15px) saturate(180%);
@@ -653,7 +721,7 @@
       box-shadow: 0 0 30px #2f80ed;
     }
 
-    /* Магазин - обновленный дизайн со списком */
+    /* Магазин */
     .store-list {
       background: rgba(12, 26, 40, 0.3);
       backdrop-filter: blur(15px) saturate(180%);
@@ -830,6 +898,135 @@
       margin-right: 8px;
     }
 
+    /* Последние новости */
+    .news-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 30px;
+      margin: 40px 0;
+    }
+
+    .news-card {
+      background: rgba(12, 26, 40, 0.3);
+      backdrop-filter: blur(15px) saturate(180%);
+      border-radius: 30px;
+      padding: 30px;
+      border: 1px solid rgba(74, 144, 226, 0.3);
+      transition: 0.3s;
+    }
+
+    .news-card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(74, 144, 226, 0.6);
+      box-shadow: 0 0 30px #0d4f96;
+    }
+
+    .news-date {
+      color: #7eb9ff;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+
+    .news-title {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 15px;
+      color: white;
+    }
+
+    .news-excerpt {
+      color: #b7c9e0;
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    .news-link {
+      color: #7eb9ff;
+      text-decoration: none;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      transition: 0.3s;
+    }
+
+    .news-link:hover {
+      color: white;
+      gap: 15px;
+    }
+
+    /* FAQ секция */
+    .faq-section {
+      margin: 60px 0;
+    }
+
+    .faq-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+      gap: 30px;
+      margin-top: 40px;
+    }
+
+    .faq-item {
+      background: rgba(12, 26, 40, 0.3);
+      backdrop-filter: blur(15px) saturate(180%);
+      border-radius: 30px;
+      padding: 30px;
+      border: 1px solid rgba(74, 144, 226, 0.3);
+      transition: 0.3s;
+    }
+
+    .faq-item:hover {
+      border-color: rgba(74, 144, 226, 0.6);
+      box-shadow: 0 0 30px #0d4f96;
+    }
+
+    .faq-question {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 15px;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .faq-question i {
+      color: #7eb9ff;
+      font-size: 24px;
+    }
+
+    .faq-answer {
+      color: #b7c9e0;
+      line-height: 1.6;
+      padding-left: 34px;
+    }
+
+    .faq-support-link {
+      text-align: center;
+      margin-top: 50px;
+    }
+
+    .faq-support-btn {
+      display: inline-block;
+      background: rgba(47, 128, 237, 0.2);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 15px 40px;
+      border-radius: 60px;
+      font-size: 18px;
+      font-weight: 700;
+      color: white;
+      text-decoration: none;
+      transition: 0.3s;
+    }
+
+    .faq-support-btn:hover {
+      background: rgba(47, 128, 237, 0.4);
+      border-color: rgba(255, 255, 255, 0.3);
+      transform: scale(1.05);
+    }
+
     /* Контактный блок */
     .contact-section {
       background: rgba(12, 30, 48, 0.2);
@@ -843,7 +1040,7 @@
       align-items: center;
       justify-content: space-between;
       gap: 50px;
-      margin-top: 40px;
+      margin: 40px 0;
       position: relative;
       overflow: hidden;
     }
@@ -935,6 +1132,8 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
     }
 
     .footer-copy {
@@ -959,35 +1158,281 @@
       filter: drop-shadow(0 0 20px #2974cc);
     }
 
-    /* Адаптация */
-    @media (max-width: 900px) {
-      .hero-info h2 { font-size: 50px; }
-      .hero-avatar i { font-size: 200px; }
-      .contact-btn { font-size: 22px; padding: 20px 40px; }
-      .nav-links { gap: 20px; }
-      .header-flex { flex-direction: column; gap: 20px; }
-      .footer-grid { flex-direction: column; gap: 20px; }
-      .status-grid { gap: 30px; }
-      .store-items { gap: 40px; }
+    /* МОБИЛЬНАЯ ВЕРСИЯ */
+    @media (max-width: 768px) {
+      .container {
+        padding: 0 20px;
+      }
+
+      .header-flex {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+
+      .header-left {
+        justify-content: center;
+        margin-bottom: 10px;
+      }
+
+      .logo {
+        flex-direction: column;
+        gap: 5px;
+      }
+
+      .logo-icon {
+        font-size: 40px;
+      }
+
+      .logo h1 {
+        font-size: 28px;
+      }
+
+      .logo span {
+        font-size: 14px;
+      }
+
+      .nav-links {
+        gap: 15px;
+        margin: 10px 0;
+      }
+
+      .nav-links a {
+        font-size: 16px;
+      }
+
+      .social-header {
+        justify-content: center;
+      }
+
+      .hero-info h2 {
+        font-size: 40px;
+      }
+
+      .hero-info p {
+        font-size: 16px;
+      }
+
+      .hero-avatar {
+        flex: 0 0 200px;
+      }
+
+      .hero-avatar i {
+        font-size: 200px;
+        padding: 30px;
+      }
+
+      .btn {
+        padding: 12px 30px;
+        font-size: 16px;
+      }
+
+      .section-title {
+        font-size: 36px;
+      }
+
+      .section-title::after {
+        width: 120px;
+      }
+
+      .section-sub {
+        font-size: 16px;
+        margin: 20px 0 40px;
+      }
+
+      .status-section {
+        padding: 30px 20px;
+      }
+
+      .status-title {
+        font-size: 28px;
+      }
+
+      .status-item {
+        font-size: 18px;
+      }
+
+      .games-grid {
+        grid-template-columns: 1fr;
+        gap: 30px;
+      }
+
+      .game-card {
+        padding: 25px 20px;
+      }
+
+      .game-card h3 {
+        font-size: 28px;
+      }
+
+      .game-icon {
+        font-size: 50px;
+      }
+
+      .store-list {
+        padding: 30px 20px;
+      }
+
+      .store-items {
+        gap: 30px;
+      }
+
+      .store-item-simple h3 {
+        font-size: 22px;
+      }
+
+      .store-item-simple i {
+        font-size: 40px;
+      }
+
+      .store-main-link {
+        padding: 15px 40px;
+        font-size: 20px;
+      }
+
+      .team-grid {
+        gap: 30px;
+      }
+
+      .member {
+        padding: 30px 15px;
+      }
+
+      .member-avatar {
+        font-size: 60px;
+      }
+
+      .member h4 {
+        font-size: 22px;
+      }
+
+      .news-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .news-card {
+        padding: 25px;
+      }
+
+      .news-title {
+        font-size: 22px;
+      }
+
+      .faq-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .faq-item {
+        padding: 25px;
+      }
+
+      .faq-question {
+        font-size: 18px;
+      }
+
+      .contact-section {
+        padding: 50px 30px;
+        flex-direction: column;
+        text-align: center;
+        border-radius: 60px 20px 60px 20px;
+      }
+
+      .contact-text h3 {
+        font-size: 36px;
+      }
+
+      .contact-text p {
+        font-size: 18px;
+      }
+
+      .contact-btn {
+        padding: 15px 40px;
+        font-size: 22px;
+      }
+
+      .footer-grid {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .footer-social {
+        justify-content: center;
+      }
+
+      #scrollToTop {
+        bottom: 20px;
+        right: 20px;
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .hero-info h2 {
+        font-size: 32px;
+      }
+
+      .hero-avatar i {
+        font-size: 150px;
+      }
+
+      .btn-group {
+        flex-direction: column;
+        width: 100%;
+      }
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .store-items {
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .store-main-link {
+        width: 100%;
+        text-align: center;
+      }
+
+      .contact-btn {
+        width: 100%;
+        text-align: center;
+        justify-content: center;
+      }
     }
   </style>
 </head>
 <body>
+  <!-- Кнопка наверх -->
+  <div id="scrollToTop" onclick="scrollToTop()">
+    <i class="fas fa-arrow-up"></i>
+  </div>
+
   <header>
     <div class="container header-flex">
-      <div class="logo">
-        <i class="fas fa-crown logo-icon"></i>
-        <h1>MQRZ Team</h1>
-        <span>ROBLOX DEV</span>
+      <div class="header-left">
+        <div class="logo">
+          <i class="fas fa-crown logo-icon"></i>
+          <h1>MQRZ Team</h1>
+          <span>ROBLOX DEV</span>
+        </div>
+        <div class="language-switcher">
+          <button class="lang-btn active" onclick="switchLanguage('ru')">RU</button>
+          <button class="lang-btn" onclick="switchLanguage('en')">EN</button>
+        </div>
       </div>
       <div class="nav-links">
         <a href="#games">Проекты</a>
         <a href="#store">Магазин</a>
         <a href="#team">Команда</a>
+        <a href="#news">Новости</a>
+        <a href="#faq">FAQ</a>
         <a href="#contact">Поддержка</a>
       </div>
       <div class="social-header">
-        <!-- Только TikTok и Telegram -->
         <a href="#" target="_blank"><i class="fab fa-telegram"></i></a>
         <a href="#" target="_blank"><i class="fab fa-tiktok"></i></a>
       </div>
@@ -998,16 +1443,14 @@
     <div class="container hero-flex">
       <div class="hero-info">
         <span class="hero-badge"><i class="fas fa-bolt"></i> roblox studio</span>
-        <h2>create · build ·<br>dominate</h2>
-        <p>MQRZ Team — команда разработчиков, создающая игры в Roblox.</p>
+        <h2 data-ru="create · build · dominate" data-en="create · build · dominate">create · build ·<br>dominate</h2>
+        <p data-ru="MQRZ Team — команда разработчиков, создающая игры в Roblox." data-en="MQRZ Team — a team of developers creating games on Roblox.">MQRZ Team — команда разработчиков, создающая игры в Roblox.</p>
         <div class="btn-group">
-          <!-- Кнопка Основатель с ссылкой на профиль -->
-          <a href="#" target="_blank" class="btn btn-primary"><i class="fas fa-crown"></i> основатель</a>
-          <a href="#" target="_blank" class="btn btn-outline"><i class="fab fa-telegram"></i> telegram</a>
+          <a href="#" target="_blank" class="btn btn-primary"><i class="fas fa-crown"></i> <span data-ru="основатель" data-en="founder">основатель</span></a>
+          <a href="#" target="_blank" class="btn btn-outline"><i class="fab fa-telegram"></i> <span data-ru="telegram" data-en="telegram">telegram</span></a>
         </div>
       </div>
       <div class="hero-avatar">
-        <!-- Символ вместо Discord -->
         <i class="fas fa-cube"></i>
       </div>
     </div>
@@ -1015,30 +1458,28 @@
 
   <section id="games">
     <div class="container">
-      <h2 class="section-title">наши игры</h2>
-      <div class="section-sub">актуальные проекты на Roblox</div>
+      <h2 class="section-title" data-ru="наши игры" data-en="our games">наши игры</h2>
+      <div class="section-sub" data-ru="актуальные проекты на Roblox" data-en="current projects on Roblox">актуальные проекты на Roblox</div>
       
-      <!-- Новая секция статуса -->
       <div class="status-section">
-        <h3 class="status-title">Статус MQRZ Team</h3>
+        <h3 class="status-title" data-ru="Статус MQRZ Team" data-en="MQRZ Team Status">Статус MQRZ Team</h3>
         <div class="status-grid">
           <div class="status-item">
             <div class="status-dot green"></div>
-            <span class="status-text">Все игры: <span class="status-value">Все процессы в штатном режиме</span></span>
+            <span class="status-text" data-ru="Все игры:" data-en="All games:">Все игры: <span class="status-value" data-ru="2 активны" data-en="2 active">2 активны</span></span>
           </div>
           <div class="status-item">
             <div class="status-dot green"></div>
-            <span class="status-text">Общий статус: <span class="status-value">Все процессы в штатном режиме</span></span>
+            <span class="status-text" data-ru="Общий статус:" data-en="General status:">Общий статус: <span class="status-value" data-ru="Работаем" data-en="Working">Работаем</span></span>
           </div>
         </div>
       </div>
 
       <div class="games-grid">
-        <!-- NektoEm - анонимный чат -->
         <div class="game-card">
           <i class="fas fa-comment-dots game-icon"></i>
           <h3>NektoEm</h3>
-          <div class="game-tag"><i class="fas fa-tag"></i> анонимный чат</div>
+          <div class="game-tag"><i class="fas fa-tag"></i> <span data-ru="анонимный чат" data-en="anonymous chat">анонимный чат</span></div>
           <div class="rating">
             <div class="stars">
               <i class="fas fa-star"></i>
@@ -1049,15 +1490,14 @@
             </div>
             <span class="rating-number">4.5 ★</span>
           </div>
-          <p class="game-desc">Анонимное общение, уникальные возможности и стильный дизайн. Присоединяйся!</p>
-          <a href="https://www.roblox.com/games/120818895602064/" target="_blank" class="game-btn"><i class="fas fa-play"></i> Играть</a>
+          <p class="game-desc" data-ru="Анонимное общение, уникальные возможности и стильный дизайн. Присоединяйся!" data-en="Anonymous communication, unique features and stylish design. Join us!">Анонимное общение, уникальные возможности и стильный дизайн. Присоединяйся!</p>
+          <a href="https://www.roblox.com/games/120818895602064/" target="_blank" class="game-btn"><i class="fas fa-play"></i> <span data-ru="Играть" data-en="Play">Играть</span></a>
         </div>
         
-        <!-- Вкусно — и точка | Томск -->
         <div class="game-card">
           <i class="fas fa-utensils game-icon"></i>
           <h3>Вкусно — и точка | Томск</h3>
-          <div class="game-tag"><i class="fas fa-tag"></i> симулятор / ресторан</div>
+          <div class="game-tag"><i class="fas fa-tag"></i> <span data-ru="симулятор / ресторан" data-en="simulator / restaurant">симулятор / ресторан</span></div>
           <div class="rating">
             <div class="stars">
               <i class="fas fa-star"></i>
@@ -1068,8 +1508,8 @@
             </div>
             <span class="rating-number">5.0 ★</span>
           </div>
-          <p class="game-desc">Реалистичный симулятор ресторана в Томске. Готовь, обслуживай, будь посетителем!</p>
-          <a href="https://www.roblox.com/games/106492845069834/" target="_blank" class="game-btn"><i class="fas fa-play"></i> Играть</a>
+          <p class="game-desc" data-ru="Реалистичный симулятор ресторана в Томске. Готовь, обслуживай, развивай!" data-en="Realistic restaurant simulator in Tomsk. Cook, serve, develop!">Реалистичный симулятор ресторана в Томске. Готовь, обслуживай, развивай!</p>
+          <a href="https://www.roblox.com/games/106492845069834/" target="_blank" class="game-btn"><i class="fas fa-play"></i> <span data-ru="Играть" data-en="Play">Играть</span></a>
         </div>
       </div>
     </div>
@@ -1077,30 +1517,30 @@
 
   <section id="store" style="background: #07121f;">
     <div class="container">
-      <h2 class="section-title">магазин товаров</h2>
-      <div class="section-sub">товары продаются на Playerok для более безопасных сделок</div>
+      <h2 class="section-title" data-ru="магазин товаров" data-en="store">магазин товаров</h2>
+      <div class="section-sub" data-ru="товары продаются на Playerok" data-en="products are sold on Playerok">товары продаются на Playerok</div>
       
       <div class="store-list">
         <div class="store-items">
           <div class="store-item-simple">
             <i class="fas fa-gamepad"></i>
-            <h3>Игры</h3>
-            <p>ROBLOX SHOP WP</p>
+            <h3 data-ru="Игры" data-en="Games">Игры</h3>
+            <p>PLAYEROK</p>
           </div>
           <div class="store-item-simple">
             <i class="fas fa-code"></i>
-            <h3>Скрипты</h3>
-            <p>ROBLOX SHOP WP</p>
+            <h3 data-ru="Скрипты" data-en="Scripts">Скрипты</h3>
+            <p>PLAYEROK</p>
           </div>
           <div class="store-item-simple">
             <i class="fas fa-cube"></i>
-            <h3>Модели</h3>
-            <p>ROBLOX SHOP WP</p>
+            <h3 data-ru="Модели" data-en="Models">Модели</h3>
+            <p>PLAYEROK</p>
           </div>
         </div>
         
         <a href="https://playerok.com/profile/Roblox-shop-WP/products" target="_blank" class="store-main-link">
-          Перейти на Playerok <i class="fas fa-arrow-right"></i>
+          <span data-ru="Перейти на Playerok" data-en="Go to Playerok">Перейти на Playerok</span> <i class="fas fa-arrow-right"></i>
         </a>
       </div>
     </div>
@@ -1108,19 +1548,18 @@
 
   <section id="team">
     <div class="container">
-      <h2 class="section-title">наша команда</h2>
-      <div class="section-sub">люди, которые создают лучшие игры</div>
+      <h2 class="section-title" data-ru="наша команда" data-en="our team">наша команда</h2>
+      <div class="section-sub" data-ru="люди, которые создают лучшие игры" data-en="people who create the best games">люди, которые создают лучшие игры</div>
       <div class="team-grid">
-        <!-- antvidxx - CEO и основатель -->
         <div class="member ceo-member">
           <div class="member-avatar">
             <i class="fas fa-crown"></i>
           </div>
           <h4>antvidxx</h4>
-          <div class="member-role">CEO & Основатель</div>
-          <p style="color: #b7c9e0; margin-bottom: 15px;">Создатель MQRZ Team</p>
+          <div class="member-role" data-ru="CEO & Основатель" data-en="CEO & Founder">CEO & Основатель</div>
+          <p style="color: #b7c9e0; margin-bottom: 15px;" data-ru="Создатель MQRZ Team" data-en="Creator of MQRZ Team">Создатель MQRZ Team</p>
           <a href="#" target="_blank" class="profile-link">
-            <i class="fas fa-external-link-alt"></i> перейти в профиль
+            <i class="fas fa-external-link-alt"></i> <span data-ru="перейти в профиль" data-en="go to profile">перейти в профиль</span>
           </a>
         </div>
 
@@ -1129,9 +1568,9 @@
             <i class="fas fa-code"></i>
           </div>
           <h4>MQRZ</h4>
-          <div class="member-role">лид-скриптер</div>
+          <div class="member-role" data-ru="лид-скриптер" data-en="lead scripter">лид-скриптер</div>
           <a href="#" target="_blank" class="profile-link">
-            <i class="fas fa-external-link-alt"></i> перейти в профиль
+            <i class="fas fa-external-link-alt"></i> <span data-ru="перейти в профиль" data-en="go to profile">перейти в профиль</span>
           </a>
         </div>
 
@@ -1140,9 +1579,108 @@
             <i class="fas fa-paint-brush"></i>
           </div>
           <h4>NiktoXA</h4>
-          <div class="member-role">ведущий билдер</div>
+          <div class="member-role" data-ru="ведущий билдер" data-en="lead builder">ведущий билдер</div>
           <a href="#" target="_blank" class="profile-link">
-            <i class="fas fa-external-link-alt"></i> перейти в профиль
+            <i class="fas fa-external-link-alt"></i> <span data-ru="перейти в профиль" data-en="go to profile">перейти в профиль</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Последние новости -->
+  <section id="news" style="background: #07121f;">
+    <div class="container">
+      <h2 class="section-title" data-ru="последние новости" data-en="latest news">последние новости</h2>
+      <div class="section-sub" data-ru="всегда будь в курсе обновлений" data-en="always stay updated">всегда будь в курсе обновлений</div>
+      
+      <div class="news-grid">
+        <div class="news-card">
+          <div class="news-date">15 февраля 2026</div>
+          <h3 class="news-title" data-ru="Обновление в NektoEm" data-en="NektoEm Update">Обновление в NektoEm</h3>
+          <p class="news-excerpt" data-ru="Добавлены новые смайлики, улучшена анонимность и исправлены баги." data-en="New emojis added, anonymity improved, bugs fixed.">Добавлены новые смайлики, улучшена анонимность и исправлены баги.</p>
+          <a href="#" class="news-link"><span data-ru="Читать далее" data-en="Read more">Читать далее</span> <i class="fas fa-arrow-right"></i></a>
+        </div>
+
+        <div class="news-card">
+          <div class="news-date">10 февраля 2026</div>
+          <h3 class="news-title" data-ru="Новый сезон во Вкусно — и точка" data-en="New Season in Vkusno — i Tochka">Новый сезон во Вкусно — и точка</h3>
+          <p class="news-excerpt" data-ru="Новые блюда, уникальные рецепты и соревнования поваров." data-en="New dishes, unique recipes, and chef competitions.">Новые блюда, уникальные рецепты и соревнования поваров.</p>
+          <a href="#" class="news-link"><span data-ru="Читать далее" data-en="Read more">Читать далее</span> <i class="fas fa-arrow-right"></i></a>
+        </div>
+
+        <div class="news-card">
+          <div class="news-date">5 февраля 2026</div>
+          <h3 class="news-title" data-ru="Новые товары в магазине" data-en="New Products in Store">Новые товары в магазине</h3>
+          <p class="news-excerpt" data-ru="Добавлены эксклюзивные скрипты и модели." data-en="Exclusive scripts and models added.">Добавлены эксклюзивные скрипты и модели.</p>
+          <a href="#" class="news-link"><span data-ru="Читать далее" data-en="Read more">Читать далее</span> <i class="fas fa-arrow-right"></i></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ секция -->
+  <section id="faq">
+    <div class="container">
+      <h2 class="section-title">FAQ</h2>
+      <div class="section-sub" data-ru="часто задаваемые вопросы" data-en="frequently asked questions">часто задаваемые вопросы</div>
+      
+      <div class="faq-section">
+        <div class="faq-grid">
+          <div class="faq-item">
+            <div class="faq-question">
+              <i class="fas fa-question-circle"></i>
+              <span data-ru="У вас качественные продукты?" data-en="Do you have quality products?">У вас качественные продукты?</span>
+            </div>
+            <div class="faq-answer" data-ru="Да, все продукты изготовлены нами." data-en="Yes, all products are made by us.">
+              Да, все продукты изготовлены нами.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question">
+              <i class="fas fa-question-circle"></i>
+              <span data-ru="У вас эксклюзивные продукты?" data-en="Do you have exclusive products?">У вас эксклюзивные продукты?</span>
+            </div>
+            <div class="faq-answer" data-ru="Да, во всех наших продуктах есть проверка лицензий, которая не дает людям перепродавать их." data-en="Yes, all our products have license verification that prevents people from reselling them.">
+              Да, во всех наших продуктах есть проверка лицензий, которая не дает людям перепродавать их.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question">
+              <i class="fas fa-question-circle"></i>
+              <span data-ru="Какие у вас игры?" data-en="What games do you have?">Какие у вас игры?</span>
+            </div>
+            <div class="faq-answer" data-ru="Мы разрабатываем различные игры, с разными жанрами. Актуальные игры вы можете посмотреть выше." data-en="We develop various games with different genres. You can see current games above.">
+              Мы разрабатываем различные игры, с разными жанрами. Актуальные игры вы можете посмотреть выше.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question">
+              <i class="fas fa-question-circle"></i>
+              <span data-ru="У меня остались вопросы!" data-en="I have questions!">У меня остались вопросы!</span>
+            </div>
+            <div class="faq-answer" data-ru="Вы можете перейти в нашу поддержку, нажав на кнопку ниже." data-en="You can go to our support by clicking the button below.">
+              Вы можете перейти в нашу поддержку, нажав на кнопку ниже.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question">
+              <i class="fas fa-question-circle"></i>
+              <span data-ru="Как купить продукты?" data-en="How to buy products?">Как купить продукты?</span>
+            </div>
+            <div class="faq-answer" data-ru="Вам нужно перейти по кнопке, затем выбрать нужный вам товар и оплатить. После мы начнем делать вам лицензию и сам товар. Дальнейшая инструкция будет в чате." data-en="You need to click the button, select the product you want and pay. Then we will start making a license and the product itself. Further instructions will be in the chat.">
+              Вам нужно перейти по кнопке, затем выбрать нужный вам товар и оплатить. После мы начнем делать вам лицензию и сам товар. Дальнейшая инструкция будет в чате.
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-support-link">
+          <a href="#contact" class="faq-support-btn">
+            <i class="fab fa-telegram"></i> <span data-ru="Перейти в поддержку" data-en="Go to support">Перейти в поддержку</span>
           </a>
         </div>
       </div>
@@ -1153,8 +1691,8 @@
     <div class="container">
       <div class="contact-section">
         <div class="contact-text">
-          <h3>Поддержка</h3>
-          <p>Ждем тебя в Telegram</p>
+          <h3 data-ru="Поддержка" data-en="Support">Поддержка</h3>
+          <p data-ru="Ждем тебя в Telegram" data-en="Waiting for you in Telegram">Ждем тебя в Telegram</p>
         </div>
         <a href="#" target="_blank" class="contact-btn">
           <i class="fab fa-telegram"></i> Telegram <i class="fas fa-arrow-right"></i>
@@ -1166,7 +1704,7 @@
   <footer>
     <div class="container footer-grid">
       <div class="footer-copy">
-        <i class="fas fa-cube" style="color:#3e8edd;"></i> MQRZ Team<br>© 2026 все права защищены
+        <i class="fas fa-cube" style="color:#3e8edd;"></i> MQRZ Team<br>© 2026 <span data-ru="все права защищены" data-en="all rights reserved">все права защищены</span>
       </div>
       <div class="footer-social">
         <a href="#" target="_blank"><i class="fab fa-telegram"></i></a>
@@ -1179,24 +1717,63 @@
     // ИНСТРУКЦИЯ ПО НАСТРОЙКЕ ССЫЛОК:
     // ================================
     // 1. Telegram ссылки: найдите все '#' в href у иконок telegram и замените на вашу ссылку
-    //    Пример: <a href="https://t.me/ваш_канал" target="_blank">
-    //
     // 2. TikTok ссылки: найдите все '#' в href у иконок tiktok и замените на вашу ссылку
-    //    Пример: <a href="https://tiktok.com/@ваш_аккаунт" target="_blank">
-    //
     // 3. Ссылка на основателя: в кнопке "основатель" и в профиле antvidxx 
     //    замените '#' на https://www.roblox.com/users/10155321154/profile
-    //
-    // 4. Ссылки на профили MQRZ и NiktoXA: замените '#' на ссылки их профилей Roblox
-    //
-    // 5. Ссылки на игры уже вставлены:
-    //    - NektoEm: https://www.roblox.com/games/120818895602064/
-    //    - Вкусно — и точка: https://www.roblox.com/games/106492845069834/
-    //
-    // 6. Ссылка на Playerok: https://playerok.com/profile/Roblox-shop-WP/products (уже вставлена)
+    // 4. Ссылки на профили MQRZ и NiktoXA: замените '#' на ссылки их профилей
+    // 5. Ссылки на новости: замените '#' на реальные ссылки (если есть)
+
+    // Кнопка наверх
+    window.onscroll = function() {
+      const button = document.getElementById('scrollToTop');
+      if (document.body.scrollTop > 500 || document.documentElement.scrollTop > 500) {
+        button.classList.add('show');
+      } else {
+        button.classList.remove('show');
+      }
+    };
+
+    function scrollToTop() {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
+
+    // Языковой переключатель
+    function switchLanguage(lang) {
+      const ruBtn = document.querySelectorAll('.lang-btn')[0];
+      const enBtn = document.querySelectorAll('.lang-btn')[1];
+      
+      if (lang === 'ru') {
+        ruBtn.classList.add('active');
+        enBtn.classList.remove('active');
+      } else {
+        enBtn.classList.add('active');
+        ruBtn.classList.remove('active');
+      }
+
+      // Меняем текст на всех элементах с атрибутами data-ru и data-en
+      document.querySelectorAll('[data-ru]').forEach(element => {
+        if (lang === 'ru') {
+          element.textContent = element.getAttribute('data-ru');
+        } else {
+          element.textContent = element.getAttribute('data-en');
+        }
+      });
+
+      // Отдельно обрабатываем элементы со сложной структурой (статус)
+      document.querySelectorAll('.status-value').forEach(element => {
+        if (lang === 'ru') {
+          element.textContent = element.getAttribute('data-ru');
+        } else {
+          element.textContent = element.getAttribute('data-en');
+        }
+      });
+    }
 
     // Анимация появления при скролле
-    const animatedElements = document.querySelectorAll('.game-card, .store-list, .member, .contact-section, .status-section');
+    const animatedElements = document.querySelectorAll('.game-card, .store-list, .member, .contact-section, .status-section, .news-card, .faq-item');
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
