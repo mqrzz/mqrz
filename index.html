@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MQRZ Team · разработка в Roblox</title>
-  <!-- Font Awesome 5 (иконки) -->
-  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css">
-  <!-- Google Fonts: современный гротеск -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+  <title>MQRZ Team · студия Roblox игр</title>
+  <!-- Font Awesome 6 (бесплатный набор) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- Google Fonts: Inter + Clash Display (для акцентов) -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
   <style>
     * {
       margin: 0;
@@ -17,42 +17,73 @@
 
     body {
       font-family: 'Inter', sans-serif;
-      background-color: #0b0d10;
-      color: #e3e9f1;
+      background-color: #03070b;
+      color: #ebf3fe;
       line-height: 1.5;
       scroll-behavior: smooth;
+      overflow-x: hidden;
     }
 
-    /* кастомный скролл */
+    /* кастомный скролл в стиле киберпанк */
     ::-webkit-scrollbar {
-      width: 10px;
+      width: 12px;
     }
     ::-webkit-scrollbar-track {
-      background: #1a1e24;
+      background: #0c141f;
+      border-left: 1px solid #1d3850;
     }
     ::-webkit-scrollbar-thumb {
-      background: #3a4a5c;
-      border-radius: 20px;
+      background: linear-gradient(145deg, #3478b0, #1b4b77);
+      border-radius: 0px;
+      border: 2px solid #0b1b2b;
+      box-shadow: inset 0 0 6px #a0d0ff77;
     }
     ::-webkit-scrollbar-thumb:hover {
-      background: #5f7a97;
+      background: #4a9bdf;
     }
 
     .container {
-      max-width: 1300px;
+      max-width: 1400px;
       margin: 0 auto;
-      padding: 0 30px;
+      padding: 0 40px;
     }
 
-    /* ХЕДЕР */
+    /* ------ неоновые обводки и свечения (глобальные) ------ */
+    .glow-border {
+      position: relative;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+      border-radius: 30px;
+    }
+
+    .glow-border::before {
+      content: '';
+      position: absolute;
+      inset: -3px;
+      z-index: -1;
+      border-radius: 32px;
+      background: linear-gradient(145deg, #48b5ff, #a070ff, #ff70b5);
+      opacity: 0.5;
+      filter: blur(6px);
+      transition: opacity 0.4s;
+    }
+
+    .glow-border:hover::before {
+      opacity: 1;
+      filter: blur(10px);
+    }
+
+    /* хедер со стеклом */
     header {
-      padding: 24px 0;
-      background: rgba(8, 10, 12, 0.9);
-      backdrop-filter: blur(8px);
-      border-bottom: 1px solid #253341;
+      padding: 18px 0;
+      background: rgba(3, 15, 26, 0.7);
+      backdrop-filter: blur(16px) saturate(180%);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 2px solid #2a4a70;
+      box-shadow: 0 10px 30px -15px #001d3d, 0 0 20px #00315333;
       position: sticky;
       top: 0;
-      z-index: 100;
+      z-index: 1000;
     }
 
     .header-flex {
@@ -64,510 +95,504 @@
     .logo {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 14px;
     }
 
     .logo-icon {
-      font-size: 38px;
-      color: #66c0ff;
-      filter: drop-shadow(0 0 6px #2f8fff66);
+      font-size: 46px;
+      color: #7bc3ff;
+      filter: drop-shadow(0 0 12px #0088ff) drop-shadow(0 0 25px #0055aa);
+      transform: rotate(5deg);
     }
 
     .logo h1 {
-      font-weight: 800;
-      font-size: 28px;
-      letter-spacing: -0.5px;
-      background: linear-gradient(145deg, #ffffff, #b2d9ff);
+      font-weight: 900;
+      font-size: 34px;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, #fff 20%, #c0e0ff 60%, #7fb9ff);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
+      text-shadow: 0 0 15px #2f7ec1;
     }
 
     .logo span {
       font-weight: 500;
       font-size: 18px;
-      color: #8fa6c2;
-      margin-left: 5px;
+      background: #1d3752;
+      padding: 4px 12px;
+      border-radius: 40px;
+      color: #c3e2ff;
+      border: 1px solid #5282b3;
+      box-shadow: 0 0 12px #1e4e77;
     }
 
     .nav-links {
       display: flex;
-      gap: 32px;
+      gap: 42px;
     }
 
     .nav-links a {
-      color: #cbd5e2;
+      color: #d3e6ff;
       text-decoration: none;
-      font-weight: 600;
-      font-size: 16px;
+      font-weight: 700;
+      font-size: 18px;
       transition: 0.2s;
-      border-bottom: 2px solid transparent;
-      padding-bottom: 6px;
+      padding: 8px 0;
+      border-bottom: 3px solid transparent;
+      text-shadow: 0 0 5px transparent;
+      letter-spacing: 0.3px;
     }
 
     .nav-links a:hover {
       color: white;
       border-bottom-color: #4d9fff;
+      text-shadow: 0 0 8px #60a5ff;
     }
 
     .social-header a {
-      color: #b0c5da;
-      font-size: 22px;
-      margin-left: 20px;
+      color: #bcd6ff;
+      font-size: 26px;
+      margin-left: 27px;
       transition: 0.2s;
+      filter: drop-shadow(0 0 8px #2f7ad1);
     }
 
     .social-header a:hover {
-      color: #66c0ff;
-      transform: scale(1.1);
+      color: white;
+      transform: scale(1.2) rotate(3deg);
+      filter: drop-shadow(0 0 15px #6aaaff);
     }
 
-    /* ГЕРОЙ (роблокс-стайл) */
+    /* Герой с 3D-элементами */
     .hero {
-      padding: 60px 0 80px;
-      background: radial-gradient(circle at 30% 30%, #1a3042, #0b0f15 70%);
+      padding: 80px 0 100px;
+      background: radial-gradient(ellipse at 70% 20%, #0a2a44, #01060c 80%);
       position: relative;
       overflow: hidden;
+      border-bottom: 3px solid #1c507b;
+      box-shadow: 0 -30px 40px -20px #0e314d inset, 0 30px 50px -30px #55a0ff;
     }
 
-    .hero::before {
-      content: "";
+    .hero::after {
+      content: '';
       position: absolute;
-      width: 500px;
-      height: 500px;
-      background: radial-gradient(circle, #3c6e9c20, transparent 70%);
-      top: -100px;
-      right: -100px;
-      border-radius: 50%;
-      z-index: 0;
+      width: 100%;
+      height: 100%;
+      background: repeating-linear-gradient(45deg, #ffffff08 0px, #ffffff08 20px, #00000010 20px, #00000010 40px);
+      pointer-events: none;
     }
 
     .hero-flex {
       display: flex;
       align-items: center;
-      gap: 40px;
+      gap: 60px;
       position: relative;
-      z-index: 2;
+      z-index: 5;
       flex-wrap: wrap;
     }
 
     .hero-info {
-      flex: 1 1 350px;
-    }
-
-    .hero-info h2 {
-      font-size: 56px;
-      font-weight: 800;
-      line-height: 1.2;
-      background: linear-gradient(135deg, #f0f9ff, #9ac8ff);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .hero-info p {
-      font-size: 18px;
-      color: #b0c7e0;
-      margin: 20px 0 25px;
-      max-width: 500px;
+      flex: 1 1 400px;
     }
 
     .hero-badge {
       display: inline-block;
-      background: #19232e;
-      padding: 8px 18px;
+      background: #0f253b;
+      padding: 10px 24px;
       border-radius: 60px;
-      border: 1px solid #3f5e7a;
-      color: #b7dcff;
-      font-weight: 600;
-      margin-bottom: 20px;
-      font-size: 14px;
-      backdrop-filter: blur(4px);
+      border: 2px solid #428bca;
+      color: #c2e2ff;
+      font-weight: 700;
+      margin-bottom: 30px;
+      font-size: 16px;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 0 20px #0059ff66;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .hero-info h2 {
+      font-size: 70px;
+      font-weight: 900;
+      line-height: 1.1;
+      background: linear-gradient(145deg, #ffffff, #c4e1ff, #a0cbff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: 0 0 30px #003e7f;
+    }
+
+    .hero-info p {
+      font-size: 20px;
+      color: #b8d6ff;
+      margin: 25px 0 35px;
+      max-width: 550px;
+      text-shadow: 0 2px 5px black;
     }
 
     .btn-group {
       display: flex;
-      gap: 15px;
+      gap: 25px;
       flex-wrap: wrap;
     }
 
     .btn {
-      padding: 14px 36px;
+      padding: 16px 44px;
       border-radius: 60px;
-      font-weight: 700;
-      font-size: 16px;
+      font-weight: 800;
+      font-size: 18px;
       text-decoration: none;
-      transition: all 0.25s;
+      transition: 0.3s;
       display: inline-flex;
       align-items: center;
-      gap: 10px;
-      border: 1px solid transparent;
+      gap: 15px;
+      border: 2px solid transparent;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      box-shadow: 0 10px 25px -5px #00000080;
     }
 
     .btn-primary {
-      background: #2f80ed;
+      background: linear-gradient(135deg, #1f65a9, #3793ff);
       color: white;
-      box-shadow: 0 10px 20px -8px #1f4b8a;
+      border-color: #9aceff;
+      box-shadow: 0 0 25px #0077ff, 0 10px 25px #001d3d;
     }
 
     .btn-primary:hover {
-      background: #4891ff;
-      transform: scale(1.05);
-      box-shadow: 0 18px 25px -10px #2f80ed;
+      background: linear-gradient(135deg, #3282d1, #56a2ff);
+      transform: translateY(-6px) scale(1.02);
+      box-shadow: 0 0 40px #2f8fff, 0 20px 30px -8px #001d3d;
+      border-color: white;
     }
 
     .btn-outline {
-      background: transparent;
-      border-color: #4b6e8f;
-      color: #e2ecff;
+      background: rgba(0, 30, 60, 0.4);
+      backdrop-filter: blur(10px);
+      border-color: #4c88c9;
+      color: #f0f6ff;
+      box-shadow: 0 0 15px #124e88;
     }
 
     .btn-outline:hover {
-      border-color: #87b9ff;
-      background: rgba(47, 128, 237, 0.1);
+      background: rgba(24, 84, 148, 0.6);
+      border-color: #a7d0ff;
       color: white;
+      transform: translateY(-4px);
+      box-shadow: 0 0 35px #3d94ff;
     }
 
     .hero-avatar {
       flex: 0 0 300px;
-      text-align: center;
-      filter: drop-shadow(0 0 30px #305d8a);
+      filter: drop-shadow(0 0 50px #004488);
+      transform-style: preserve-3d;
+      animation: float 6s infinite alternate ease-in-out;
     }
 
-    .hero-avatar img {
-      width: 100%;
-      max-width: 300px;
-      border-radius: 50px 20px 50px 20px;
-      background: linear-gradient(145deg, #15232e, #0f1a22);
-      padding: 8px;
-      border: 2px solid #2b5277;
-      box-shadow: 0 30px 40px -15px black;
+    @keyframes float {
+      0% { transform: translateY(0px) rotate(0deg); }
+      100% { transform: translateY(-20px) rotate(2deg); }
     }
 
-    /* секции */
+    .hero-avatar i {
+      font-size: 300px;
+      color: #5d9eff;
+      text-shadow: 10px 10px 0 #002856, 20px 20px 0 #001c3d, 0 0 50px #0099ff;
+      background: #0f2a41;
+      padding: 40px 30px 30px 30px;
+      border-radius: 120px 40px 120px 40px;
+      border: 4px solid #4387cf;
+      box-shadow: 0 50px 60px -20px black, inset 0 -10px 30px #004488;
+    }
+
+    /* Общие секции */
     section {
-      padding: 90px 0;
+      padding: 110px 0;
+      position: relative;
     }
 
     .section-title {
-      font-size: 40px;
-      font-weight: 800;
+      font-size: 52px;
+      font-weight: 900;
       margin-bottom: 20px;
       letter-spacing: -0.02em;
-      background: linear-gradient(145deg, #fff, #b2d3f0);
+      background: linear-gradient(135deg, #ffffff, #bbdbff, #7cb5ff);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
+      text-transform: uppercase;
       position: relative;
+      display: inline-block;
     }
 
     .section-title::after {
       content: '';
-      display: block;
-      width: 100px;
-      height: 4px;
-      background: linear-gradient(90deg, #2f80ed, #8fcbff);
-      margin-top: 12px;
-      border-radius: 4px;
+      position: absolute;
+      bottom: -15px;
+      left: 0;
+      width: 180px;
+      height: 5px;
+      background: linear-gradient(90deg, #2f80ed, #ff70b5, #a070ff);
+      border-radius: 8px;
+      box-shadow: 0 0 25px #ac6eff;
     }
 
     .section-sub {
-      color: #9fb5d0;
-      font-size: 18px;
-      max-width: 700px;
-      margin-bottom: 60px;
+      color: #b5d3ff;
+      font-size: 20px;
+      max-width: 750px;
+      margin: 30px 0 70px;
+      border-left: 6px solid #467fc9;
+      padding-left: 30px;
+      text-shadow: 0 2px 5px black;
     }
 
-    /* карточки проектов (игры) */
+    /* Карточки игр — двойная обводка + неон */
     .games-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 35px;
-      margin-top: 30px;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 45px;
+      margin-top: 40px;
     }
 
     .game-card {
-      background: #141b24;
-      border-radius: 36px;
-      padding: 28px 25px 30px;
-      border: 1px solid #2b3d51;
-      transition: transform 0.25s, border-color 0.2s, box-shadow 0.35s;
-      box-shadow: 0 25px 40px -25px #00000080;
-      backdrop-filter: blur(2px);
+      background: #0c1a28;
+      border-radius: 50px;
+      padding: 35px 30px 35px;
+      border: 3px solid transparent;
+      background-clip: padding-box;
+      box-shadow: 0 30px 40px -25px #000000, 0 0 0 1px #3b6991 inset, 0 0 20px #00284f;
+      transition: 0.3s;
+      position: relative;
+    }
+
+    .game-card::before {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 54px;
+      padding: 4px;
+      background: linear-gradient(145deg, #46a6ff, #b282ff, #ff6fa3);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: 0.6;
+      transition: opacity 0.4s;
+      pointer-events: none;
+    }
+
+    .game-card:hover::before {
+      opacity: 1;
+      filter: blur(2px);
     }
 
     .game-card:hover {
-      transform: translateY(-12px);
-      border-color: #4080b5;
-      box-shadow: 0 35px 50px -20px #0f2b44;
+      transform: translateY(-15px) scale(1.02);
+      box-shadow: 0 0 35px #0d4f96, 0 35px 50px -20px black;
     }
 
     .game-icon {
-      font-size: 50px;
-      margin-bottom: 15px;
-      color: #70b5ff;
+      font-size: 65px;
+      margin-bottom: 20px;
+      color: #aad0ff;
+      text-shadow: 0 0 25px #0a64c0;
     }
 
     .game-card h3 {
-      font-size: 28px;
-      font-weight: 700;
-      margin-bottom: 10px;
-      color: #ffffff;
+      font-size: 34px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
     }
 
     .game-tag {
+      background: #132d44;
+      padding: 8px 22px;
+      border-radius: 60px;
       display: inline-block;
-      background: #1f3142;
-      color: #9ac7ff;
-      border-radius: 40px;
-      padding: 5px 15px;
-      font-size: 13px;
-      font-weight: 600;
-      margin: 8px 0 15px;
-      border: 1px solid #385779;
-    }
-
-    .game-desc {
-      color: #b7c9e0;
-      margin-bottom: 25px;
-      font-size: 15px;
+      margin: 15px 0 20px;
+      border: 2px solid #4177b0;
+      font-weight: 700;
+      box-shadow: 0 0 15px #1d4c79;
     }
 
     .stats {
       display: flex;
-      gap: 20px;
-      border-top: 1px solid #26384b;
-      padding-top: 20px;
-      font-size: 14px;
-      color: #9bb7d6;
+      gap: 30px;
+      border-top: 2px dashed #315d84;
+      padding-top: 25px;
+      margin-top: 15px;
+      font-size: 17px;
     }
 
-    .stats i {
-      margin-right: 5px;
-      color: #4f9eff;
-    }
-
-    /* услуги / особенности */
+    /* features с аутлайн-эффектами */
     .features {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 30px;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 40px;
       margin: 50px 0;
     }
 
     .feature-item {
-      background: #10171f;
-      padding: 35px 25px;
-      border-radius: 35px;
-      border: 1px solid #25394b;
-      text-align: center;
+      background: #0c1a28c0;
+      backdrop-filter: blur(8px);
+      padding: 45px 30px;
+      border-radius: 60px 20px 60px 20px;
+      border: 3px solid #315c88;
+      box-shadow: 0 0 30px #002c55, 0 20px 30px -20px black;
       transition: 0.2s;
+      text-align: center;
     }
 
     .feature-item:hover {
-      background: #151f2b;
-      border-color: #3a6891;
+      border-color: #73b9ff;
+      box-shadow: 0 0 45px #1d6cb0, 0 30px 30px -15px black;
+      transform: scale(1.02);
     }
 
     .feature-item i {
-      font-size: 45px;
-      color: #66c0ff;
-      margin-bottom: 25px;
+      font-size: 60px;
+      color: #7eb9ff;
+      text-shadow: 0 0 30px #0077ff;
     }
 
-    .feature-item h4 {
-      font-size: 22px;
-      font-weight: 700;
-      margin-bottom: 12px;
-    }
-
-    .feature-item p {
-      color: #a7bedb;
-      font-size: 15px;
-    }
-
-    /* команда */
+    /* команда с обводкой-градиентом */
     .team-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 35px;
-      margin-top: 50px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 45px;
     }
 
     .member {
-      background: #131e28;
-      border-radius: 40px;
-      padding: 30px 20px 25px;
-      text-align: center;
-      border: 1px solid #314d66;
+      background: #102433;
+      border-radius: 70px 20px 70px 20px;
+      padding: 40px 20px 30px;
+      border: 4px solid transparent;
+      background-clip: padding-box;
+      box-shadow: 0 25px 40px -15px black;
+      transition: 0.2s;
+      position: relative;
+    }
+
+    .member::after {
+      content: '';
+      position: absolute;
+      inset: -6px;
+      border-radius: 76px 24px 76px 24px;
+      background: linear-gradient(145deg, #ff70a5, #7070ff, #70c8ff);
+      opacity: 0;
+      transition: 0.4s;
+      z-index: -2;
+    }
+
+    .member:hover::after {
+      opacity: 0.8;
+      filter: blur(8px);
+    }
+
+    .member:hover {
+      transform: scale(1.02) translateY(-8px);
+      border-color: #6ab0ff;
     }
 
     .member-avatar {
-      font-size: 85px;
-      color: #b0d2f5;
+      font-size: 100px;
       line-height: 1;
-      filter: drop-shadow(0 8px 12px #102a3a);
+      color: #adceff;
+      filter: drop-shadow(0 0 25px #0066cc);
     }
 
-    .member h4 {
-      font-size: 24px;
-      font-weight: 700;
-      margin: 10px 0 5px;
-    }
-
-    .member-role {
-      color: #74b9ff;
-      font-weight: 600;
-      font-size: 15px;
-      background: #1c3246;
-      display: inline-block;
-      padding: 4px 18px;
-      border-radius: 50px;
-      margin: 8px 0 12px;
-    }
-
-    .member-social a {
-      color: #7d9fc7;
-      margin: 0 8px;
-      font-size: 20px;
-      transition: 0.2s;
-    }
-
-    .member-social a:hover {
-      color: #a6cbff;
-    }
-
-    /* контакты + призыв */
+    /* контактный блок с гигантской обводкой */
     .contact-section {
-      background: linear-gradient(145deg, #0e1922, #0b121a);
-      border-radius: 100px 20px 100px 20px;
-      border: 1px solid #27445f;
-      padding: 70px 50px;
+      background: #0c1e30;
+      border-radius: 140px 30px 140px 30px;
+      border: 4px solid #296bb0;
+      box-shadow: 0 0 50px #003a75, inset 0 0 30px #002244;
+      padding: 90px 70px;
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 40px;
-      margin-top: 30px;
-    }
-
-    .contact-text {
-      flex: 1 1 300px;
+      justify-content: space-between;
+      gap: 50px;
+      margin-top: 40px;
     }
 
     .contact-text h3 {
-      font-size: 40px;
-      font-weight: 800;
-      margin-bottom: 15px;
-      color: #fff;
-    }
-
-    .contact-text p {
-      color: #b3cef0;
-      font-size: 18px;
+      font-size: 52px;
+      font-weight: 900;
+      text-shadow: 0 0 25px #004c99;
     }
 
     .contact-btn {
-      background: #1f3f5c;
-      border: 1px solid #3e7bb4;
-      padding: 20px 50px;
-      border-radius: 100px;
-      font-size: 22px;
-      font-weight: 700;
+      background: #0c273f;
+      border: 4px solid #4790da;
+      padding: 25px 70px;
+      border-radius: 130px;
+      font-size: 30px;
+      font-weight: 800;
       color: white;
       text-decoration: none;
       display: inline-flex;
       align-items: center;
-      gap: 20px;
-      transition: 0.25s;
-      box-shadow: 0 20px 30px -15px #1d496d;
+      gap: 30px;
+      transition: 0.3s;
+      box-shadow: 0 0 50px #004a99;
     }
 
     .contact-btn:hover {
-      background: #295f88;
-      gap: 30px;
-      border-color: #70b0ff;
+      background: #1d4870;
+      border-color: #a3d2ff;
+      gap: 45px;
+      box-shadow: 0 0 80px #3f96ff;
+      transform: scale(1.03);
     }
 
-    /* футер */
+    /* футер с неоном */
     footer {
-      background: #070b0f;
-      padding: 40px 0;
-      border-top: 1px solid #1f3243;
+      background: #020a13;
+      padding: 50px 0;
+      border-top: 5px solid transparent;
+      border-image: repeating-linear-gradient(90deg, #3d7eb3, #b05eff, #3d7eb3) 30;
+      box-shadow: 0 -20px 50px -20px #003d80;
     }
 
     .footer-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 40px;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 30px;
       align-items: center;
     }
 
-    .footer-copy {
-      color: #6f8aa8;
-      font-size: 14px;
-    }
-
-    .footer-links {
-      display: flex;
-      gap: 30px;
-      justify-content: center;
-    }
-
-    .footer-links a {
-      color: #9eb7d3;
-      text-decoration: none;
-      font-weight: 500;
-    }
-
-    .footer-links a:hover {
-      color: white;
-    }
-
     .footer-social i {
-      font-size: 24px;
-      margin-left: 20px;
-      color: #6b8fba;
+      font-size: 32px;
+      margin-left: 30px;
+      color: #568ac9;
       transition: 0.2s;
+      border: 2px solid transparent;
+      border-radius: 50%;
+      padding: 8px;
     }
 
     .footer-social i:hover {
-      color: #9ac3ff;
+      color: white;
+      border-color: #5194f0;
+      box-shadow: 0 0 30px #2974cc;
+      transform: rotate(360deg) scale(1.1);
     }
 
-    /* адаптация */
-    @media (max-width: 800px) {
-      .header-flex {
-        flex-direction: column;
-        gap: 15px;
-      }
-      .nav-links {
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 20px;
-      }
-      .hero-info h2 {
-        font-size: 42px;
-      }
-      .hero-flex {
-        justify-content: center;
-        text-align: center;
-      }
-      .hero-info p {
-        margin-left: auto;
-        margin-right: auto;
-      }
-      .btn-group {
-        justify-content: center;
-      }
-      .section-title::after {
-        margin-left: auto;
-        margin-right: auto;
-      }
-      .contact-section {
-        flex-direction: column;
-        text-align: center;
-        padding: 50px 30px;
-      }
+    /* мелкие эффекты */
+    .glow-text {
+      text-shadow: 0 0 15px currentColor;
+    }
+
+    .fa-arrow-right, .fa-rocket {
+      filter: drop-shadow(0 0 8px cyan);
+    }
+
+    @media (max-width: 900px) {
+      .hero-info h2 { font-size: 50px; }
+      .hero-avatar i { font-size: 200px; }
+      .contact-btn { font-size: 22px; padding: 20px 40px; }
     }
   </style>
 </head>
@@ -575,20 +600,21 @@
   <header>
     <div class="container header-flex">
       <div class="logo">
-        <i class="fas fa-cube logo-icon"></i>
+        <i class="fas fa-crown logo-icon"></i>
         <h1>MQRZ Team</h1>
-        <span>· roblox dev</span>
+        <span>ROBLOX DEV</span>
       </div>
       <div class="nav-links">
-        <a href="#games">Игры</a>
-        <a href="#services">Услуги</a>
+        <a href="#games">Проекты</a>
+        <a href="#services">Сервисы</a>
         <a href="#team">Команда</a>
-        <a href="#contact">Контакты</a>
+        <a href="#contact">Связаться</a>
       </div>
       <div class="social-header">
         <a href="#"><i class="fab fa-discord"></i></a>
         <a href="#"><i class="fab fa-youtube"></i></a>
         <a href="#"><i class="fab fa-github"></i></a>
+        <a href="#"><i class="fab fa-tiktok"></i></a>
       </div>
     </div>
   </header>
@@ -596,87 +622,97 @@
   <section class="hero">
     <div class="container hero-flex">
       <div class="hero-info">
-        <span class="hero-badge"><i class="fas fa-code"></i> разработка в Roblox Studio</span>
-        <h2>Создаём миры,<br>в которые хочется вернуться</h2>
-        <p>MQRZ Team — команда профессионалов, превращающая идеи в популярные Roblox-игры. От прототипа до миллиона визитов.</p>
+        <span class="hero-badge"><i class="fas fa-bolt"></i> next-gen roblox studio</span>
+        <h2>create · build ·<br>dominate</h2>
+        <p>MQRZ Team — элитная команда разработчиков, создающая игры с миллионами визитов. Твой опыт будет легендарным.</p>
         <div class="btn-group">
-          <a href="#games" class="btn btn-primary"><i class="fas fa-rocket"></i> Наши проекты</a>
-          <a href="#contact" class="btn btn-outline"><i class="fab fa-discord"></i> Обсудить идею</a>
+          <a href="#games" class="btn btn-primary"><i class="fas fa-crown"></i> портфолио</a>
+          <a href="#contact" class="btn btn-outline"><i class="fab fa-discord"></i> discord</a>
         </div>
       </div>
       <div class="hero-avatar">
-        <!-- иконка вместо изображения (символ Roblox) -->
-        <i class="fas fa-dice-d20" style="font-size: 260px; color: #5f9eff; background: #0f2638; padding: 30px; border-radius: 80px 30px 80px 30px; border: 2px solid #2f6ea2;"></i>
+        <i class="fas fa-ghost"></i>
       </div>
     </div>
   </section>
 
   <section id="games">
     <div class="container">
-      <h2 class="section-title">Активные проекты</h2>
-      <div class="section-sub">Игры, которые уже покорили сердца тысяч игроков, и новые тайтлы в разработке</div>
+      <h2 class="section-title">актуальные миры</h2>
+      <div class="section-sub">проекты с высоким онлайном и уникальным дизайном</div>
       <div class="games-grid">
-        <!-- карточка 1 -->
         <div class="game-card">
-          <i class="fas fa-tree game-icon"></i>
+          <i class="fas fa-cloud-sun game-icon"></i>
           <h3>Skyblock MQRZ</h3>
-          <span class="game-tag">🍃 симулятор / выживание</span>
-          <p class="game-desc">Островной небесный блок с уникальными генераторами, мини-играми и экономикой. Более 500 000 визитов.</p>
+          <div class="game-tag"><i class="fas fa-tag"></i> симулятор / экономика</div>
+          <p class="game-desc">Острова, прокачка, аукцион и уникальные генераторы. Более 1.2М визитов.</p>
           <div class="stats">
-            <span><i class="fas fa-user-friends"></i> 12.4K активных</span>
-            <span><i class="fas fa-star"></i> 4.8 ★</span>
+            <span><i class="fas fa-users"></i> 18.4K игроков</span>
+            <span><i class="fas fa-star" style="color: gold;"></i> 4.9 ★</span>
+            <span><i class="fas fa-gamepad"></i> обновление 2.4</span>
           </div>
         </div>
-        <!-- карточка 2 -->
         <div class="game-card">
-          <i class="fas fa-car game-icon"></i>
+          <i class="fas fa-meteor game-icon"></i>
           <h3>Neon Drift</h3>
-          <span class="game-tag">🏎️ гонки / дрифт</span>
-          <p class="game-desc">Ночные трассы, неоновые тюнинг и реалистичный дрифт на движке Roblox. Регулярные обновления.</p>
+          <div class="game-tag"><i class="fas fa-tag"></i> аркада / тюнинг</div>
+          <p class="game-desc">Ночные трассы, реалистичный дрифт, 50+ машин и неон-кастомизация.</p>
           <div class="stats">
-            <span><i class="fas fa-user-friends"></i> 8.1K активных</span>
-            <span><i class="fas fa-star"></i> 4.9 ★</span>
+            <span><i class="fas fa-users"></i> 9.1K игроков</span>
+            <span><i class="fas fa-star" style="color: gold;"></i> 4.8 ★</span>
+            <span><i class="fas fa-clock"></i> сезон 3</span>
           </div>
         </div>
-        <!-- карточка 3 -->
         <div class="game-card">
           <i class="fas fa-dragon game-icon"></i>
           <h3>Dungeon Quest</h3>
-          <span class="game-tag">⚔️ RPG / данжи</span>
-          <p class="game-desc">Кооперативное подземелье с прокачкой, эпичными боссами и лутом. Совместно с 3 разработчиками.</p>
+          <div class="game-tag"><i class="fas fa-tag"></i> RPG / PVE</div>
+          <p class="game-desc">Кооперативные данжи, 15 боссов, легендарный лут и рейды.</p>
           <div class="stats">
-            <span><i class="fas fa-user-friends"></i> 6.3K активных</span>
-            <span><i class="fas fa-star"></i> 4.7 ★</span>
+            <span><i class="fas fa-users"></i> 7.3K игроков</span>
+            <span><i class="fas fa-star" style="color: gold;"></i> 4.7 ★</span>
+            <span><i class="fas fa-skull"></i> хардкор</span>
+          </div>
+        </div>
+        <div class="game-card">
+          <i class="fas fa-robot game-icon"></i>
+          <h3>Prison Life 2</h3>
+          <div class="game-tag"><i class="fas fa-tag"></i> ролеплей / экшен</div>
+          <p class="game-desc">Новая глава тюремной жизни: побеги, работа, кастомные камеры.</p>
+          <div class="stats">
+            <span><i class="fas fa-users"></i> 12.2K игроков</span>
+            <span><i class="fas fa-star" style="color: gold;"></i> 4.9 ★</span>
+            <span><i class="fas fa-handcuffs"></i> побег</span>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <section id="services" style="background: #0a1118;">
+  <section id="services" style="background: #07121f;">
     <div class="container">
-      <h2 class="section-title">Что мы делаем</h2>
-      <div class="section-sub">Полный цикл разработки игр на Roblox — от идеи до монетизации</div>
+      <h2 class="section-title">инструменты мастеров</h2>
+      <div class="section-sub">мы покрываем все этапы создания игр на Roblox</div>
       <div class="features">
         <div class="feature-item">
           <i class="fas fa-cubes"></i>
-          <h4>Геймдизайн</h4>
-          <p>Проработка механик, баланса и нарратива. Создаем захватывающий геймплей.</p>
-        </div>
-        <div class="feature-item">
-          <i class="fas fa-paint-brush"></i>
-          <h4>3D билдинг</h4>
-          <p>Детализированные карты, сборка моделей в Roblox Studio, освещение, окружение.</p>
+          <h4>сложный билдинг</h4>
+          <p>террейн, высокодетализированные модели, освещение future</p>
         </div>
         <div class="feature-item">
           <i class="fas fa-code"></i>
           <h4>Luau скриптинг</h4>
-          <p>Оптимизированный код, системы инвентаря, PvP, сохранения и дата-сторидж.</p>
+          <p>системы, анимации, оптимизация, DataStore, OOP фреймворки</p>
         </div>
         <div class="feature-item">
-          <i class="fas fa-chart-line"></i>
-          <h4>Монетизация</h4>
-          <p>Gamepasses, разработка внутриигрового магазина и продвижение в сообществе.</p>
+          <i class="fas fa-paint-brush"></i>
+          <h4>UI/UX дизайн</h4>
+          <p>современные интерфейсы, кастомные шрифты, анимация меню</p>
+        </div>
+        <div class="feature-item">
+          <i class="fas fa-chart-simple"></i>
+          <h4>монетизация</h4>
+          <p>gamepasses, разработка платного контента, аналитика</p>
         </div>
       </div>
     </div>
@@ -684,40 +720,41 @@
 
   <section id="team">
     <div class="container">
-      <h2 class="section-title">Ядро команды</h2>
-      <div class="section-sub">Талантливые разработчики, строители и скриптеры, объединённые любовью к Roblox</div>
+      <h2 class="section-title">основной состав</h2>
+      <div class="section-sub">люди, которые заряжают игры жизнью</div>
       <div class="team-grid">
         <div class="member">
           <div class="member-avatar"><i class="fas fa-user-astronaut"></i></div>
-          <h4>MQRZ Dev</h4>
-          <div class="member-role">основатель, лид‑скриптер</div>
+          <h4>MQRZ</h4>
+          <div class="member-role">лид-скриптер / основатель</div>
           <div class="member-social">
             <a href="#"><i class="fab fa-discord"></i></a>
             <a href="#"><i class="fab fa-github"></i></a>
+            <a href="#"><i class="fab fa-youtube"></i></a>
           </div>
         </div>
         <div class="member">
           <div class="member-avatar"><i class="fas fa-user-ninja"></i></div>
           <h4>NiktoXA</h4>
-          <div class="member-role">сборщик миров / билдер</div>
-          <div class="member-social">
-            <a href="#"><i class="fab fa-discord"></i></a>
-            <a href="#"><i class="fab fa-youtube"></i></a>
-          </div>
-        </div>
-        <div class="member">
-          <div class="member-avatar"><i class="fas fa-user-tie"></i></div>
-          <h4>Reze</h4>
-          <div class="member-role">UI/UX дизайнер</div>
+          <div class="member-role">ведущий билдер</div>
           <div class="member-social">
             <a href="#"><i class="fab fa-discord"></i></a>
             <a href="#"><i class="fas fa-paint-brush"></i></a>
           </div>
         </div>
         <div class="member">
+          <div class="member-avatar"><i class="fas fa-user-tie"></i></div>
+          <h4>Reze</h4>
+          <div class="member-role">арт-директор / UI</div>
+          <div class="member-social">
+            <a href="#"><i class="fab fa-discord"></i></a>
+            <a href="#"><i class="fas fa-palette"></i></a>
+          </div>
+        </div>
+        <div class="member">
           <div class="member-avatar"><i class="fas fa-user-secret"></i></div>
           <h4>FrostCoder</h4>
-          <div class="member-role">системный скриптер</div>
+          <div class="member-role">бэкенд скриптер</div>
           <div class="member-social">
             <a href="#"><i class="fab fa-github"></i></a>
             <a href="#"><i class="fab fa-discord"></i></a>
@@ -731,11 +768,11 @@
     <div class="container">
       <div class="contact-section">
         <div class="contact-text">
-          <h3>Создадим твою игру вместе?</h3>
-          <p>Напишите нам в Discord или Telegram. Обсудим идею, сроки и детали коллаборации. Открыты для команд и заказчиков.</p>
+          <h3>хочешь в команду или заказать игру?</h3>
+          <p style="font-size: 22px; color: #bbdbff; margin-top: 15px;">напиши в Discord — открыты для коллаб и заказов</p>
         </div>
         <a href="#" class="contact-btn">
-          <i class="fab fa-discord"></i> mqrz.team <i class="fas fa-arrow-right"></i>
+          <i class="fab fa-discord"></i> MQRZ_team <i class="fas fa-arrow-right"></i>
         </a>
       </div>
     </div>
@@ -744,41 +781,52 @@
   <footer>
     <div class="container footer-grid">
       <div class="footer-copy">
-        <i class="fas fa-cube" style="color:#397fcf;"></i> MQRZ Team  ·  разработка игр Roblox<br>
-        © 2025  |  Все права защищены
+        <i class="fas fa-crown" style="color:#3e8edd;"></i> MQRZ Team · since 2023<br>© 2025 все права защищены
       </div>
       <div class="footer-links">
-        <a href="#">Портфолио</a>
-        <a href="#">Условия</a>
-        <a href="#">Вакансии</a>
+        <a href="#">правила</a>
+        <a href="#">вакансии</a>
+        <a href="#">политика</a>
       </div>
       <div class="footer-social">
         <i class="fab fa-discord"></i>
         <i class="fab fa-youtube"></i>
         <i class="fab fa-twitter"></i>
-        <i class="fab fa-tiktok"></i>
+        <i class="fab fa-instagram"></i>
       </div>
     </div>
   </footer>
 
-  <!-- маленький декоративный скрипт для плавного скролла (просто красоты ради) -->
   <script>
-    (function() {
-      // плавный скролл до якорей
-      const links = document.querySelectorAll('.nav-links a, .btn-group a[href^="#"]');
-      links.forEach(link => {
-        link.addEventListener('click', function(e) {
-          const href = this.getAttribute('href');
-          if (href && href.startsWith('#')) {
-            e.preventDefault();
-            const section = document.querySelector(href);
-            if (section) {
-              section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-          }
-        });
+    // добавление анимации появления при скролле (ленивая)
+    const cards = document.querySelectorAll('.game-card, .feature-item, .member');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.opacity = 1;
+          entry.target.style.transform = 'translateY(0)';
+        }
       });
-    })();
+    }, { threshold: 0.2 });
+    cards.forEach(c => {
+      c.style.opacity = 0;
+      c.style.transform = 'translateY(30px)';
+      c.style.transition = 'opacity 0.5s, transform 0.5s';
+      observer.observe(c);
+    });
+
+    // плавный скролл для якорей
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        const href = this.getAttribute('href');
+        if (href === "#") return;
+        const target = document.querySelector(href);
+        if (target) {
+          e.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+    });
   </script>
 </body>
 </html>
