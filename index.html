@@ -1,44 +1,6 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-
-  
-   <!-- 1. СТРАЖА ВСТАВЛЯЕМ СЮДА (СРАЗУ ПОСЛЕ HEAD) -->
-  <style>
-    body { display: none !important; }
-  </style>
-
-  <script>
-    async function checkAccess() {
-        const blocked = [
-            'LV', 'LT', 'EE', 'KZ', 'UZ', 'TM', 'TJ', 'KG', 
-            'PK', 'IN', 'BD', 'IR', 'IQ', 'SA', 'DZ', 'EG', 
-            'SD', 'LY', 'ET', 'NG', 'SO', 'AF', 'YE'
-        ];
-
-        try {
-            const response = await fetch('https://ipapi.co');
-            const data = await response.json();
-
-            if (blocked.includes(data.country_code)) {
-                document.documentElement.innerHTML = `
-                    <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; background-color:#03070b; color:#ebf3fe; font-family:sans-serif; text-align:center; padding:20px;">
-                        <h1 style="color:#4a9bdf;">Доступ ограничен / Access Denied</h1>
-                        <p style="color:#aaa;">Просмотр запрещен в вашем регионе / Restricted in your region.</p>
-                    </div>`;
-            } else {
-                document.body.style.setProperty('display', 'block', 'important');
-            }
-        } catch (e) {
-            document.body.style.setProperty('display', 'block', 'important');
-        }
-    }
-    checkAccess();
-  </script>
-  <!-- КОНЕЦ СТРАЖИ -->
-
-
-  
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
   <title>MQRZ Team</title>
