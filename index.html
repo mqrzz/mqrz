@@ -110,83 +110,6 @@
       color: white;
     }
 
-    /* Плашка приветствия */
-    .welcome-popup {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(3, 7, 11, 0.8);
-      backdrop-filter: blur(15px) saturate(180%);
-      -webkit-backdrop-filter: blur(15px) saturate(180%);
-      z-index: 10000;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      opacity: 1;
-      transition: opacity 0.5s ease;
-    }
-
-    .welcome-popup.hidden {
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .welcome-card {
-      background: rgba(12, 26, 40, 0.5);
-      backdrop-filter: blur(25px) saturate(250%);
-      -webkit-backdrop-filter: blur(25px) saturate(250%);
-      border: 1px solid rgba(74, 144, 226, 0.3);
-      border-radius: 70px 20px 70px 20px;
-      padding: 60px 80px;
-      max-width: 600px;
-      text-align: center;
-      box-shadow: 0 0 70px #003a75, inset 0 0 50px rgba(0, 34, 68, 0.5);
-      animation: fadeInUp 1s ease-out;
-      margin: 20px;
-    }
-
-    .welcome-card h2 {
-      font-size: 48px;
-      font-weight: 900;
-      margin-bottom: 30px;
-      background: linear-gradient(145deg, #ffffff, #c4e1ff, #a0cbff);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      text-shadow: 0 0 30px #003e7f;
-    }
-
-    .welcome-card p {
-      font-size: 24px;
-      color: #b8d6ff;
-      margin-bottom: 40px;
-      line-height: 1.5;
-    }
-
-    .welcome-btn {
-      background: rgba(47, 128, 237, 0.3);
-      backdrop-filter: blur(10px);
-      border: 2px solid rgba(71, 144, 218, 0.5);
-      padding: 18px 50px;
-      border-radius: 60px;
-      font-size: 22px;
-      font-weight: 800;
-      color: white;
-      text-decoration: none;
-      display: inline-block;
-      transition: 0.3s;
-      cursor: pointer;
-      box-shadow: 0 0 30px #004a99;
-    }
-
-    .welcome-btn:hover {
-      background: rgba(47, 128, 237, 0.5);
-      border-color: rgba(163, 210, 255, 0.8);
-      transform: scale(1.05);
-      box-shadow: 0 0 50px #3f96ff;
-    }
-
     /* Хедер с улучшенным стеклом */
     header {
       padding: 18px 0;
@@ -1410,23 +1333,6 @@
         height: 40px;
         font-size: 20px;
       }
-
-      .welcome-card {
-        padding: 40px 30px;
-      }
-
-      .welcome-card h2 {
-        font-size: 36px;
-      }
-
-      .welcome-card p {
-        font-size: 20px;
-      }
-
-      .welcome-btn {
-        padding: 15px 40px;
-        font-size: 18px;
-      }
     }
 
     @media (max-width: 480px) {
@@ -1480,31 +1386,10 @@
       .logo h1 {
         font-size: 20px;
       }
-
-      .welcome-card {
-        padding: 30px 20px;
-      }
-
-      .welcome-card h2 {
-        font-size: 28px;
-      }
-
-      .welcome-card p {
-        font-size: 18px;
-      }
     }
   </style>
 </head>
 <body>
-  <!-- Плашка приветствия -->
-  <div class="welcome-popup" id="welcomePopup">
-    <div class="welcome-card">
-      <h2>Добро пожаловать!</h2>
-      <p>Совсем скоро наши игры будут готовы. Осталось совсем немного.</p>
-      <a href="#" class="welcome-btn" id="welcomeContinueBtn">Продолжить</a>
-    </div>
-  </div>
-
   <!-- Кнопка наверх -->
   <div id="scrollToTop" onclick="scrollToTop()">
     <i class="fas fa-arrow-up"></i>
@@ -1542,7 +1427,8 @@
         <p data-ru="MQRZ Team — команда разработчиков, создающая игры в Roblox." data-en="MQRZ Team — a team of developers creating games on Roblox.">MQRZ Team — команда разработчиков, создающая игры в Roblox.</p>
         <div class="btn-group">
           <a href="#" target="_blank" class="btn btn-primary"><i class="fas fa-crown"></i> <span data-ru="основатель" data-en="founder">основатель</span></a>
-          <a href="#" target="_blank" class="btn btn-outline"><i class="fab fa-telegram"></i> <span data-ru="telegram" data-en="telegram">telegram</span></a>
+          <a href="#" target="_blank" class="btn btn-outline"><i class="fab fa-telegram"></i> <span data-ru="telegram-канал" data-en="telegram-channel">telegram-канал</span></a>
+          <a href="#" target="_blank" class="btn btn-outline"><i class="fab fa-roblox"></i> <span data-ru="группа roblox" data-en="roblox-group">группа roblox</span></a>
         </div>
       </div>
       <div class="hero-avatar">
@@ -1801,7 +1687,6 @@
       <div class="footer-social">
         <a href="#" target="_blank"><i class="fab fa-telegram"></i></a>
         <a href="#" target="_blank"><i class="fab fa-tiktok"></i></a>
-        <a href="#" target="_blank" class="roblox-icon"><i class="fab fa-roblox"></i></a>
       </div>
     </div>
   </footer>
@@ -1809,36 +1694,31 @@
   <script>
     // ИНСТРУКЦИЯ ПО НАСТРОЙКЕ ССЫЛОК:
     // ================================
-    // 1. Telegram ссылки: найдите все '#' в href и замените на вашу ссылку:
-    //    - В кнопке "telegram" в герое (строка 719)
-    //    - В кнопке "Telegram" в поддержке (строка 1183)
-    //    - В иконках Telegram в футере (строка 1191)
-    //    Пример: <a href="https://t.me/ваш_канал" target="_blank">
+    // 1. Кнопка "ОСНОВАТЕЛЬ" - строка 683
+    //    Замените '#' на ссылку профиля основателя:
+    //    <a href="https://www.roblox.com/users/10155321154/profile" target="_blank">
     //
-    // 2. TikTok ссылки: найдите '#' в href у иконок tiktok в футере (строка 1192)
-    //    Пример: <a href="https://tiktok.com/@ваш_аккаунт" target="_blank">
+    // 2. Кнопка "TELEGRAM-КАНАЛ" - строка 684
+    //    Замените '#' на ссылку Telegram канала:
+    //    <a href="https://t.me/ваш_канал" target="_blank">
     //
-    // 3. Roblox ссылка: найдите '#' в href у иконки roblox в футере (строка 1193)
-    //    замените '#' на ссылку вашего профиля Roblox или канала
-    //    Пример: <a href="https://www.roblox.com/users/ваш_id/profile" target="_blank">
+    // 3. Кнопка "ГРУППА ROBLOX" - строка 685
+    //    Замените '#' на ссылку группы Roblox:
+    //    <a href="https://www.roblox.com/communities/719299568/MQRZ-Team#!/about" target="_blank">
     //
-    // 4. Ссылка на основателя: найдите '#' в href у кнопки "основатель" (строка 718)
-    //    и в профиле antvidxx (строка 900)
-    //    замените '#' на https://www.roblox.com/users/10155321154/profile
+    // 4. В разделе КОМАНДА (строки 861, 875, 889)
+    //    Замените '#' на ссылки профилей участников:
+    //    - antvidxx: https://www.roblox.com/users/10155321154/profile
+    //    - MQRZ: ссылка на профиль
+    //    - NiktoXA: ссылка на профиль
     //
-    // 5. Ссылки на профили MQRZ и NiktoXA: найдите '#' в href (строки 914 и 928)
-    //    замените на ссылки их профилей Roblox
-
-    // Плашка приветствия
-    document.addEventListener('DOMContentLoaded', function() {
-      const welcomePopup = document.getElementById('welcomePopup');
-      const continueBtn = document.getElementById('welcomeContinueBtn');
-      
-      continueBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        welcomePopup.classList.add('hidden');
-      });
-    });
+    // 5. Кнопка "Telegram" в поддержке - строка 1033
+    //    Замените '#' на ссылку Telegram канала
+    //
+    // 6. Иконки в футере (строки 1042-1043)
+    //    Замените '#' на ссылки:
+    //    - Telegram: https://t.me/ваш_канал
+    //    - TikTok: https://tiktok.com/@ваш_аккаунт
 
     // Кнопка наверх
     window.onscroll = function() {
