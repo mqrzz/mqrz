@@ -8,6 +8,242 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <!-- Google Fonts: Inter -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
+  
+  <!-- GeoIP блокировка через ip-api.com -->
+  <script>
+    // GeoIP блокировка для указанных стран
+    // Блокируются: Латвия, Литва, Эстония, Казахстан, Узбекистан, Туркменистан, Таджикистан, Киргизия, 
+    // Пакистан, Индия, Бангладеш, Иран, Ирак, Саудовская Аравия, Алжир, Египет, Судан, Ливия, 
+    // Эфиопия, Нигерия, Сомали, Афганистан, Йемен
+    
+    // Список заблокированных стран в формате ISO 3166-1 alpha-2 (двухбуквенные коды)
+    const BLOCKED_COUNTRIES = [
+      'LV', // Латвия
+      'LT', // Литва
+      'EE', // Эстония
+      'KZ', // Казахстан
+      'UZ', // Узбекистан
+      'TM', // Туркменистан
+      'TJ', // Таджикистан
+      'KG', // Киргизия
+      'PK', // Пакистан
+      'IN', // Индия
+      'BD', // Бангладеш
+      'IR', // Иран
+      'IQ', // Ирак
+      'SA', // Саудовская Аравия
+      'DZ', // Алжир
+      'EG', // Египет
+      'SD', // Судан
+      'LY', // Ливия
+      'ET', // Эфиопия
+      'NG', // Нигерия
+      'SO', // Сомали
+      'AF', // Афганистан
+      'YE'  // Йемен
+    ];
+
+    // Функция для проверки страны посетителя
+    async function checkGeoLocation() {
+      try {
+        // Показываем прелоадер (можно добавить стили)
+        const loader = document.createElement('div');
+        loader.id = 'geo-loader';
+        loader.style.cssText = `
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(3, 7, 11, 0.9);
+          backdrop-filter: blur(10px);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 10000;
+          color: white;
+          font-size: 24px;
+          font-weight: 600;
+        `;
+        loader.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 15px;"></i> Проверка доступа...';
+        document.body.appendChild(loader);
+
+        // Запрашиваем информацию об IP через ip-api.com
+        const response = await fetch('http://ip-api.com/json/?fields=status,country,countryCode,query');
+        const data = await response.json();
+        
+        // Убираем прелоадер
+        loader.remove();
+
+        if (data.status === 'success') {
+          const countryCode = data.countryCode;
+          const countryName = data.country;
+          
+          // Проверяем, есть ли страна в черном списке
+          if (BLOCKED_COUNTRIES.includes(countryCode)) {
+            // Показываем страницу с отказом в доступе
+            showAccessDenied(countryName);
+            return false;
+          } else {
+            // Разрешаем доступ
+            return true;
+          }
+        } else {
+          // Если не удалось определить страну, разрешаем доступ
+          console.warn('Не удалось определить страну, доступ разрешен');
+          return true;
+        }
+      } catch (error) {
+        console.error('Ошибка при проверке геолокации:', error);
+        // В случае ошибки разрешаем доступ
+        return true;
+      }
+    }
+
+    // Функция для отображения страницы с отказом в доступе
+    function showAccessDenied(countryName) {
+      document.body.innerHTML = `
+        <style>
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
+          
+          body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(ellipse at 70% 20%, #0a2a44, #01060c 80%);
+            color: #ebf3fe;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+          }
+          
+          body::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 70, 70, 0.1), transparent 70%);
+            animation: rotate 20s linear infinite;
+          }
+          
+          @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+          
+          .denied-container {
+            position: relative;
+            z-index: 1;
+            max-width: 600px;
+            padding: 60px;
+            background: rgba(12, 26, 40, 0.3);
+            backdrop-filter: blur(20px) saturate(200%);
+            border: 1px solid rgba(255, 70, 70, 0.3);
+            border-radius: 70px 20px 70px 20px;
+            text-align: center;
+            animation: fadeInUp 1s ease-out;
+          }
+          
+          @keyframes fadeInUp {
+            from {
+              opacity: 0;
+              transform: translateY(30px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+          
+          .denied-icon {
+            font-size: 80px;
+            color: #ff4d4d;
+            margin-bottom: 30px;
+            text-shadow: 0 0 30px #ff4d4d;
+            animation: pulse 2s infinite;
+          }
+          
+          @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+          }
+          
+          .denied-title {
+            font-size: 48px;
+            font-weight: 900;
+            margin-bottom: 20px;
+            background: linear-gradient(145deg, #ffffff, #ffbaba);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+          }
+          
+          .denied-subtitle {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 30px;
+            color: #ffb8b8;
+          }
+          
+          .denied-country {
+            display: inline-block;
+            background: rgba(255, 70, 70, 0.2);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 70, 70, 0.5);
+            padding: 15px 40px;
+            border-radius: 60px;
+            font-size: 20px;
+            font-weight: 600;
+            margin: 20px 0;
+          }
+          
+          .denied-text {
+            color: #b7c9e0;
+            font-size: 18px;
+            line-height: 1.6;
+            margin: 30px 0;
+          }
+          
+          .denied-footer {
+            margin-top: 40px;
+            font-size: 14px;
+            color: #6f8aa8;
+          }
+        </style>
+        
+        <div class="denied-container">
+          <div class="denied-icon">
+            <i class="fas fa-ban"></i>
+          </div>
+          <h1 class="denied-title">Доступ запрещен</h1>
+          <div class="denied-subtitle">Access Denied</div>
+          <div class="denied-country">
+            <i class="fas fa-map-marker-alt" style="margin-right: 10px;"></i>
+            ${countryName}
+          </div>
+          <p class="denied-text">
+            К сожалению, доступ к этому сайту запрещен из вашей страны по решению администрации.<br>
+            Если вы считаете, что это ошибка, пожалуйста, свяжитесь с нами.
+          </p>
+          <div class="denied-footer">
+            <i class="fas fa-cube" style="color: #3e8edd;"></i> MQRZ Team
+          </div>
+        </div>
+      `;
+    }
+
+    // Запускаем проверку при загрузке страницы
+    checkGeoLocation();
+  </script>
+  
   <style>
     * {
       margin: 0;
@@ -1708,6 +1944,22 @@
     //
     // 4. Ссылки на профили MQRZ и NiktoXA: найдите '#' в href (строки 866 и 880)
     //    замените на ссылки их профилей Roblox
+    
+    // ================================
+    // ИНСТРУКЦИЯ ПО НАСТРОЙКЕ GEOIP БЛОКИРОВКИ:
+    // ================================
+    // Список заблокированных стран находится в самом верху кода (строка 29)
+    // Формат: двухбуквенные коды ISO 3166-1 alpha-2
+    // 
+    // Чтобы добавить страну в блокировку:
+    // 1. Найдите ее код здесь: https://www.iso.org/obp/ui/#search/code/
+    // 2. Добавьте в массив BLOCKED_COUNTRIES, например: 'US' для США
+    // 
+    // Чтобы удалить страну из блокировки:
+    // Просто удалите или закомментируйте соответствующую строку
+    //
+    // ВАЖНО: Сервис ip-api.com имеет ограничение 45 запросов в минуту с одного IP
+    // Для продакшена рекомендуется использовать платный API или добавить кэширование
 
     // Кнопка наверх
     window.onscroll = function() {
