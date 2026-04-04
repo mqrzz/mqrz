@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Контакты — Design Antviz</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;500;600;700;800;900&family=Onest:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<canvas id="starfield"></canvas>
+<div class="cursor" id="cursor"></div>
+<div class="cursor-trail" id="cursorTrail"></div>
+
+<nav id="navbar">
+  <div class="nav-logo" onclick="window.location.href='/index.html'">DESIGN ANTVIZ</div>
+  <div class="nav-links">
+    <a href="/index.html">Главная</a>
+    <a href="/services.html">Услуги</a>
+    <a href="/contact.html">Контакты</a>
+    <a href="/chat.html">Чат поддержки</a>
+    <a href="/admin.html" class="admin-link" style="display:none">Админ-панель</a>
+    <div class="fav-icon" onclick="window.location.href='/favorites.html'">
+      <i class="fas fa-heart"></i>
+      <div class="cart-count" id="favCountBadge">0</div>
+    </div>
+    <div class="cart-icon" onclick="window.location.href='/order.html'">
+      <i class="fas fa-shopping-bag"></i>
+      <div class="cart-count" id="cartCountBadge">0</div>
+    </div>
+    <div id="authContainer" class="auth-buttons">
+      <button class="auth-btn" onclick="showAuthModal()">Войти / Регистрация</button>
+    </div>
+  </div>
+</nav>
+
+<div class="page active">
+  <div class="section" style="padding-top:140px">
+    <div class="section-label">Связь</div>
+    <div class="section-title">Напишите нам</div>
+    
+    <div class="contact-grid" style="margin-top:48px">
+      <div class="contact-info">
+        <a class="contact-card" href="https://t.me/DESIGNANTVIZ" target="_blank">
+          <div class="contact-icon"><i class="fab fa-telegram"></i></div>
+          <div class="contact-card-text">
+            <div class="label">Личный Telegram</div>
+            <div class="value">@DESIGNANTVIZ</div>
+          </div>
+        </a>
+        <a class="contact-card" href="https://t.me/CHANNEL_DESIGNANTVIZ" target="_blank">
+          <div class="contact-icon"><i class="fas fa-broadcast-tower"></i></div>
+          <div class="contact-card-text">
+            <div class="label">Наш канал</div>
+            <div class="value">@CHANNEL_DESIGNANTVIZ</div>
+          </div>
+        </a>
+        <a class="contact-card" href="https://tiktok.com/@designantviz" target="_blank">
+          <div class="contact-icon"><i class="fab fa-tiktok"></i></div>
+          <div class="contact-card-text">
+            <div class="label">TikTok</div>
+            <div class="value">@designantviz</div>
+          </div>
+        </a>
+        <a class="contact-card" href="https://instagram.com/designantviz" target="_blank">
+          <div class="contact-icon"><i class="fab fa-instagram"></i></div>
+          <div class="contact-card-text">
+            <div class="label">Instagram</div>
+            <div class="value">@designantviz</div>
+          </div>
+        </a>
+      </div>
+      
+      <div>
+        <div style="background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:36px">
+          <div style="margin-bottom:24px; font-family:'Unbounded',sans-serif; font-size:1rem; font-weight:700">Быстрый вопрос</div>
+          <div class="form-group" style="margin-bottom:16px">
+            <label>Ваше имя</label>
+            <input class="form-input" id="cName" placeholder="Имя">
+          </div>
+          <div class="form-group" style="margin-bottom:16px">
+            <label>Telegram</label>
+            <input class="form-input" id="cTg" placeholder="@username">
+          </div>
+          <div class="form-group" style="margin-bottom:24px">
+            <label>Вопрос</label>
+            <textarea class="form-input" id="cMsg" placeholder="Напишите вопрос..." style="min-height:80px"></textarea>
+          </div>
+          <button class="btn-primary" style="width:100%; border-radius:12px" onclick="sendQuestion()">Отправить →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <footer>
+    <div class="copyright">© 2026 Design Antviz — Все права защищены</div>
+  </footer>
+</div>
+
+<!-- МОДАЛ АВТОРИЗАЦИИ -->
+<div class="modal-ov" id="authModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeAuthModal()"><i class="fas fa-times"></i></button>
+    <div class="modal-title">Вход / Регистрация</div>
+    <div style="display:flex;flex-direction:column;gap:16px;margin-top:24px">
+      <input type="email" id="authEmail" class="form-input" placeholder="Email">
+      <input type="password" id="authPassword" class="form-input" placeholder="Пароль">
+      <button class="btn-primary" onclick="handleLogin()">Войти</button>
+      <button class="btn-ghost" onclick="handleRegister()">Зарегистрироваться</button>
+      <button class="btn-ghost" onclick="handleResetPassword()">Забыли пароль?</button>
+      <hr style="border-color:var(--border);margin:8px 0">
+      <button class="btn-ghost" onclick="handleGoogleLogin()"><i class="fab fa-google"></i> Войти через Google</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">✦ <span id="toastText"></span></div>
+
+<script type="module">
+  import { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, googleProvider, signInWithPopup, doc, setDoc, getDoc, Timestamp } from './js/firebase-config.js';
+  import { showToast, showAuthModal, closeAuthModal, checkIsAdmin } from './js/main.js';
+  import { updateCartUI, updateFavUI } from './js/cart.js';
+
+  window.showAuthModal = showAuthModal;
+  window.closeAuthModal = closeAuthModal;
+
+  window.handleLogin = async () => {
+    const email = document.getElementById('authEmail').value;
+    const password = document.getElementById('authPassword').value;
+    if (!email || !password) { showToast('Заполните все поля', 'error'); return; }
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      showToast('Вход выполнен', 'success');
+      closeAuthModal();
+      setTimeout(() => window.location.reload(), 500);
+    } catch (error) {
+      let msg = 'Ошибка входа';
+      if (error.code === 'auth/invalid-credential') msg = 'Неверный email или пароль';
+      showToast(msg, 'error');
+    }
+  };
+
+  window.handleRegister = async () => {
+    const email = document.getElementById('authEmail').value;
+    const password = document.getElementById('authPassword').value;
+    if (!email || !password) { showToast('Заполните все поля', 'error'); return; }
+    if (password.length < 6) { showToast('Пароль должен быть не менее 6 символов', 'error'); return; }
+    try {
+      const userCred = await createUserWithEmailAndPassword(auth, email, password);
+      await setDoc(doc(db, 'users', userCred.user.uid), {
+        email: email,
+        displayName: email.split('@')[0],
+        role: 'user',
+        createdAt: Timestamp.now(),
+        lastLogin: Timestamp.now(),
+        isBlocked: false,
+        isDeleted: false,
+        telegram: '',
+        phone: ''
+      });
+      showToast('Регистрация успешна!', 'success');
+      closeAuthModal();
+      setTimeout(() => window.location.reload(), 500);
+    } catch (error) {
+      let msg = 'Ошибка регистрации';
+      if (error.code === 'auth/email-already-in-use') msg = 'Email уже используется';
+      showToast(msg, 'error');
+    }
+  };
+
+  window.handleGoogleLogin = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const userRef = doc(db, 'users', result.user.uid);
+      const userDoc = await getDoc(userRef);
+      if (!userDoc.exists()) {
+        await setDoc(userRef, {
+          email: result.user.email,
+          displayName: result.user.displayName || result.user.email.split('@')[0],
+          role: 'user',
+          createdAt: Timestamp.now(),
+          lastLogin: Timestamp.now(),
+          isBlocked: false,
+          isDeleted: false,
+          telegram: '',
+          phone: '',
+          avatar: result.user.photoURL || ''
+        });
+      }
+      showToast('Вход выполнен', 'success');
+      closeAuthModal();
+      setTimeout(() => window.location.reload(), 500);
+    } catch (error) {
+      showToast('Ошибка входа через Google', 'error');
+    }
+  };
+
+  window.handleResetPassword = async () => {
+    const email = document.getElementById('authEmail').value;
+    if (!email) { showToast('Введите email', 'error'); return; }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      showToast('Ссылка для сброса пароля отправлена', 'success');
+    } catch (error) {
+      showToast('Пользователь не найден', 'error');
+    }
+  };
+
+  // Отправка сообщения через Telegram бота
+  window.sendQuestion = async () => {
+    const name = document.getElementById('cName')?.value.trim();
+    const tg = document.getElementById('cTg')?.value.trim();
+    const msg = document.getElementById('cMsg')?.value.trim();
+    
+    if (!name || !tg || !msg) {
+      showToast('Заполните все поля', 'error');
+      return;
+    }
+    
+    // Здесь будет отправка через Cloudflare Worker в Telegram
+    // Пока просто показываем уведомление
+    showToast('Сообщение отправлено! Мы свяжемся с вами', 'success');
+    
+    // Очищаем форму
+    document.getElementById('cName').value = '';
+    document.getElementById('cTg').value = '';
+    document.getElementById('cMsg').value = '';
+  };
+
+  // Проверка авторизации для показа админ-ссылки
+  auth.onAuthStateChanged(async (user) => {
+    updateCartUI();
+    updateFavUI();
+    
+    const isAdmin = await checkIsAdmin(user);
+    const adminLink = document.querySelector('.admin-link');
+    if (adminLink && isAdmin) adminLink.style.display = 'block';
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    updateCartUI();
+    updateFavUI();
+  });
+</script>
+</body>
+</html>
