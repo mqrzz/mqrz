@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Политика конфиденциальности — Design Antviz</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;500;600;700;800;900&family=Onest:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<canvas id="starfield"></canvas>
+<div class="cursor" id="cursor"></div>
+<div class="cursor-trail" id="cursorTrail"></div>
+
+<nav id="navbar">
+  <div class="nav-logo" onclick="window.location.href='/index.html'">DESIGN ANTVIZ</div>
+  <div class="nav-links">
+    <a href="/index.html">Главная</a>
+    <a href="/services.html">Услуги</a>
+    <a href="/contact.html">Контакты</a>
+    <a href="/chat.html">Чат поддержки</a>
+    <a href="/admin.html" class="admin-link" style="display:none">Админ-панель</a>
+    <div class="fav-icon" onclick="window.location.href='/favorites.html'">
+      <i class="fas fa-heart"></i>
+      <div class="cart-count" id="favCountBadge">0</div>
+    </div>
+    <div class="cart-icon" onclick="window.location.href='/order.html'">
+      <i class="fas fa-shopping-bag"></i>
+      <div class="cart-count" id="cartCountBadge">0</div>
+    </div>
+    <div id="authContainer" class="auth-buttons">
+      <button class="auth-btn" onclick="showAuthModal()">Войти / Регистрация</button>
+    </div>
+  </div>
+</nav>
+
+<div class="page active">
+  <div class="page-inner" style="max-width:760px">
+    <h1>Политика конфиденциальности</h1>
+    <p class="page-sub">Актуально: 27 марта 2026 г.</p>
+    
+    <div style="color:var(--muted); line-height:1.8; font-size:.9rem">
+      
+      <h3 style="color:var(--gold); margin:32px 0 12px; font-family:'Unbounded',sans-serif; font-size:.95rem">1. Сбор данных</h3>
+      <p>Мы собираем имя, Telegram-контакт, email и информацию о заказе. Данные используются исключительно для обработки заказа и связи с вами.</p>
+      
+      <h3 style="color:var(--gold); margin:32px 0 12px; font-family:'Unbounded',sans-serif; font-size:.95rem">2. Хранение данных</h3>
+      <p>Информация хранится в защищённых системах Firebase и не передаётся третьим лицам без вашего согласия.</p>
+      
+      <h3 style="color:var(--gold); margin:32px 0 12px; font-family:'Unbounded',sans-serif; font-size:.95rem">3. Ваши права</h3>
+      <p>Вы можете запросить удаление своих данных в любое время, написав нам в Telegram @DESIGNANTVIZ.</p>
+      
+      <h3 style="color:var(--gold); margin:32px 0 12px; font-family:'Unbounded',sans-serif; font-size:.95rem">4. Файлы cookie</h3>
+      <p>Сайт использует локальное хранилище для корзины и избранного. Данные не покидают ваш браузер.</p>
+      
+      <h3 style="color:var(--gold); margin:32px 0 12px; font-family:'Unbounded',sans-serif; font-size:.95rem">5. Передача данных третьим лицам</h3>
+      <p>Мы не передаем ваши персональные данные третьим лицам, за исключением случаев, предусмотренных законодательством РФ.</p>
+      
+      <h3 style="color:var(--gold); margin:32px 0 12px; font-family:'Unbounded',sans-serif; font-size:.95rem">6. Изменение политики</h3>
+      <p>Мы оставляем за собой право вносить изменения в политику конфиденциальности. Обновления публикуются на этой странице.</p>
+      
+      <h3 style="color:var(--gold); margin:32px 0 12px; font-family:'Unbounded',sans-serif; font-size:.95rem">7. Контакты</h3>
+      <p>По всем вопросам, связанным с обработкой персональных данных, вы можете обратиться: <strong>@DESIGNANTVIZ</strong> (Telegram)</p>
+      
+    </div>
+  </div>
+  
+  <footer>
+    <div class="copyright">© 2026 Design Antviz — Все права защищены</div>
+  </footer>
+</div>
+
+<!-- МОДАЛ АВТОРИЗАЦИИ -->
+<div class="modal-ov" id="authModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeAuthModal()"><i class="fas fa-times"></i></button>
+    <div class="modal-title">Вход / Регистрация</div>
+    <div style="display:flex;flex-direction:column;gap:16px;margin-top:24px">
+      <input type="email" id="authEmail" class="form-input" placeholder="Email">
+      <input type="password" id="authPassword" class="form-input" placeholder="Пароль">
+      <button class="btn-primary" onclick="handleLogin()">Войти</button>
+      <button class="btn-ghost" onclick="handleRegister()">Зарегистрироваться</button>
+      <button class="btn-ghost" onclick="handleResetPassword()">Забыли пароль?</button>
+      <hr style="border-color:var(--border);margin:8px 0">
+      <button class="btn-ghost" onclick="handleGoogleLogin()"><i class="fab fa-google"></i> Войти через Google</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">✦ <span id="toastText"></span></div>
+
+<script type="module">
+  import { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, googleProvider, signInWithPopup, doc, setDoc, getDoc, Timestamp } from './js/firebase-config.js';
+  import { showToast, showAuthModal, closeAuthModal, checkIsAdmin } from './js/main.js';
+  import { updateCartUI, updateFavUI } from './js/cart.js';
+
+  window.showAuthModal = showAuthModal;
+  window.closeAuthModal = closeAuthModal;
+
+  window.handleLogin = async () => {
+    const email = document.getElementById('authEmail').value;
+    const password = document.getElementById('authPassword').value;
+    if (!email || !password) { showToast('Заполните все поля', 'error'); return; }
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      showToast('Вход выполнен', 'success');
+      closeAuthModal();
+      setTimeout(() => window.location.reload(), 500);
+    } catch (error) {
+      let msg = 'Ошибка входа';
+      if (error.code === 'auth/invalid-credential') msg = 'Неверный email или пароль';
+      showToast(msg, 'error');
+    }
+  };
+
+  window.handleRegister = async () => {
+    const email = document.getElementById('authEmail').value;
+    const password = document.getElementById('authPassword').value;
+    if (!email || !password) { showToast('Заполните все поля', 'error'); return; }
+    if (password.length < 6) { showToast('Пароль должен быть не менее 6 символов', 'error'); return; }
+    try {
+      const userCred = await createUserWithEmailAndPassword(auth, email, password);
+      await setDoc(doc(db, 'users', userCred.user.uid), {
+        email: email,
+        displayName: email.split('@')[0],
+        role: 'user',
+        createdAt: Timestamp.now(),
+        lastLogin: Timestamp.now(),
+        isBlocked: false,
+        isDeleted: false,
+        telegram: '',
+        phone: ''
+      });
+      showToast('Регистрация успешна!', 'success');
+      closeAuthModal();
+      setTimeout(() => window.location.reload(), 500);
+    } catch (error) {
+      let msg = 'Ошибка регистрации';
+      if (error.code === 'auth/email-already-in-use') msg = 'Email уже используется';
+      showToast(msg, 'error');
+    }
+  };
+
+  window.handleGoogleLogin = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const userRef = doc(db, 'users', result.user.uid);
+      const userDoc = await getDoc(userRef);
+      if (!userDoc.exists()) {
+        await setDoc(userRef, {
+          email: result.user.email,
+          displayName: result.user.displayName || result.user.email.split('@')[0],
+          role: 'user',
+          createdAt: Timestamp.now(),
+          lastLogin: Timestamp.now(),
+          isBlocked: false,
+          isDeleted: false,
+          telegram: '',
+          phone: '',
+          avatar: result.user.photoURL || ''
+        });
+      }
+      showToast('Вход выполнен', 'success');
+      closeAuthModal();
+      setTimeout(() => window.location.reload(), 500);
+    } catch (error) {
+      showToast('Ошибка входа через Google', 'error');
+    }
+  };
+
+  window.handleResetPassword = async () => {
+    const email = document.getElementById('authEmail').value;
+    if (!email) { showToast('Введите email', 'error'); return; }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      showToast('Ссылка для сброса пароля отправлена', 'success');
+    } catch (error) {
+      showToast('Пользователь не найден', 'error');
+    }
+  };
+
+  auth.onAuthStateChanged(async (user) => {
+    updateCartUI();
+    updateFavUI();
+    
+    const isAdmin = await checkIsAdmin(user);
+    const adminLink = document.querySelector('.admin-link');
+    if (adminLink && isAdmin) adminLink.style.display = 'block';
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    updateCartUI();
+    updateFavUI();
+  });
+</script>
+</body>
+</html>
