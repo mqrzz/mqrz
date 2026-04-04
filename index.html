@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design Antviz — Инфографика для маркетплейсов</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;500;600;700;800;900&family=Onest:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<canvas id="starfield"></canvas>
+<div class="cursor" id="cursor"></div>
+<div class="cursor-trail" id="cursorTrail"></div>
+
+<!-- NAV -->
+<nav id="navbar">
+  <div class="nav-logo" onclick="window.location.href='/index.html'">DESIGN ANTVIZ</div>
+  <div class="nav-links">
+    <a href="/index.html">Главная</a>
+    <a href="/services.html">Услуги</a>
+    <a href="/contact.html">Контакты</a>
+    <a href="/chat.html">Чат поддержки</a>
+    <a href="/admin.html" class="admin-link" style="display:none">Админ-панель</a>
+    <div class="fav-icon" onclick="window.location.href='/favorites.html'">
+      <i class="fas fa-heart"></i>
+      <div class="cart-count" id="favCountBadge">0</div>
+    </div>
+    <div class="cart-icon" onclick="window.location.href='/order.html'">
+      <i class="fas fa-shopping-bag"></i>
+      <div class="cart-count" id="cartCountBadge">0</div>
+    </div>
+    <div id="authContainer" class="auth-buttons">
+      <button class="auth-btn" onclick="showAuthModal()">Войти / Регистрация</button>
+    </div>
+  </div>
+</nav>
+
+<!-- HOME PAGE -->
+<div class="page active" id="home-page">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="orb orb-gold" style="top:-200px;left:50%;transform:translateX(-50%)"></div>
+    <div style="position:relative;z-index:2">
+      <div class="hero-eyebrow">✦ Топ-дизайнер маркетплейсов 2025</div>
+      <h1>Инфографика, которая<br><span class="gold">продаёт</span> — не просто<br><span class="stroke">красивая картинка</span></h1>
+      <p class="hero-sub">Делаем карточки товаров для WB, OZON и Яндекс.Маркет, которые увеличивают CTR до +40% и конверсию в заказ.</p>
+      <div class="hero-btns">
+        <button class="btn-primary" onclick="window.location.href='/services.html'">Смотреть услуги →</button>
+        <button class="btn-ghost" id="calcBtn">Считать ROI</button>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat"><span class="hero-stat-val counter" data-target="340">0</span><span class="hero-stat-label">Проектов сдано</span></div>
+        <div class="hero-stat"><span class="hero-stat-val"><span class="counter" data-target="40">0</span>%</span><span class="hero-stat-label">Рост CTR в среднем</span></div>
+        <div class="hero-stat"><span class="hero-stat-val"><span class="counter" data-target="48">0</span>ч</span><span class="hero-stat-label">Средний срок</span></div>
+        <div class="hero-stat"><span class="hero-stat-val"><span class="counter" data-target="98">0</span>%</span><span class="hero-stat-label">Довольных клиентов</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MARQUEE -->
+  <div class="marquee-section">
+    <div class="marquee-track" id="marqueeTrack">
+      <div class="marquee-item"><span>Wildberries</span><div class="marquee-dot"></div></div>
+      <div class="marquee-item">OZON<div class="marquee-dot"></div></div>
+      <div class="marquee-item"><span>+40% CTR</span><div class="marquee-dot"></div></div>
+      <div class="marquee-item">Яндекс.Маркет<div class="marquee-dot"></div></div>
+      <div class="marquee-item"><span>48ч срок</span><div class="marquee-dot"></div></div>
+      <div class="marquee-item">Инфографика<div class="marquee-dot"></div></div>
+      <div class="marquee-item"><span>Рекламные баннеры</span><div class="marquee-dot"></div></div>
+      <div class="marquee-item">Презентации<div class="marquee-dot"></div></div>
+      <div class="marquee-item"><span>Визитки</span><div class="marquee-dot"></div></div>
+      <div class="marquee-item"><span>Wildberries</span><div class="marquee-dot"></div></div>
+      <div class="marquee-item">OZON<div class="marquee-dot"></div></div>
+      <div class="marquee-item"><span>+40% CTR</span><div class="marquee-dot"></div></div>
+      <div class="marquee-item">Яндекс.Маркет<div class="marquee-dot"></div></div>
+      <div class="marquee-item"><span>48ч срок</span><div class="marquee-dot"></div></div>
+      <div class="marquee-item">Инфографика<div class="marquee-dot"></div></div>
+      <div class="marquee-item"><span>Рекламные баннеры</span><div class="marquee-dot"></div></div>
+      <div class="marquee-item">Презентации<div class="marquee-dot"></div></div>
+      <div class="marquee-item"><span>Визитки</span><div class="marquee-dot"></div></div>
+    </div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <div class="section reveal">
+    <div class="section-label">Процесс</div>
+    <div class="section-title">Как мы работаем</div>
+    <div class="steps-grid">
+      <div class="step-card"><div class="step-num">01</div><div class="step-icon"><i class="fas fa-comments"></i></div><h3>Бриф</h3><p>Вы рассказываете о товаре, целевой аудитории и конкурентах. Заполняем анкету вместе.</p></div>
+      <div class="step-card"><div class="step-num">02</div><div class="step-icon"><i class="fas fa-pencil-ruler"></i></div><h3>Концепция</h3><p>Разрабатываем 2-3 варианта концепции с учётом гайдлайнов маркетплейса.</p></div>
+      <div class="step-card"><div class="step-num">03</div><div class="step-icon"><i class="fas fa-check-double"></i></div><h3>Правки</h3><p>2 бесплатные итерации. Дорабатываем до вашего полного одобрения.</p></div>
+      <div class="step-card"><div class="step-num">04</div><div class="step-icon"><i class="fas fa-rocket"></i></div><h3>Готово!</h3><p>Отдаём файлы в нужных форматах. Сразу на маркетплейс — без лишних шагов.</p></div>
+    </div>
+  </div>
+
+  <!-- INFOGRAPHIC / BEFORE-AFTER -->
+  <div class="section">
+    <div class="infographic-block reveal">
+      <div class="infograph-grid">
+        <div class="infograph-text">
+          <div class="section-label">Результаты</div>
+          <div class="section-title">До и после профессиональной инфографики</div>
+          <p style="color:var(--muted);font-size:.9rem;line-height:1.7;margin-top:16px">Среднее изменение ключевых метрик после замены фотографий на профессиональную инфографику от Design Antviz</p>
+          <div class="platform-row" style="margin-top:32px">
+            <div class="platform-badge"><div class="platform-dot" style="background:#A855F7"></div>Wildberries</div>
+            <div class="platform-badge"><div class="platform-dot" style="background:#3B82F6"></div>OZON</div>
+            <div class="platform-badge"><div class="platform-dot" style="background:#F59E0B"></div>Яндекс.Маркет</div>
+          </div>
+        </div>
+        <div class="comparison-bars" id="barSection">
+          <div class="bar-item">
+            <div class="bar-label"><span>CTR карточки</span><span>+40%</span></div>
+            <div class="bar-track"><div class="bar-fill before" style="width:35%"></div></div>
+            <div style="margin-top:6px"><div class="bar-track"><div class="bar-fill" style="width:75%"></div></div></div>
+          </div>
+          <div class="bar-item">
+            <div class="bar-label"><span>Конверсия в корзину</span><span>+28%</span></div>
+            <div class="bar-track"><div class="bar-fill before" style="width:45%"></div></div>
+            <div style="margin-top:6px"><div class="bar-track"><div class="bar-fill" style="width:73%"></div></div></div>
+          </div>
+          <div class="bar-item">
+            <div class="bar-label"><span>Процент выкупа</span><span>+15%</span></div>
+            <div class="bar-track"><div class="bar-fill before" style="width:60%"></div></div>
+            <div style="margin-top:6px"><div class="bar-track"><div class="bar-fill" style="width:75%"></div></div></div>
+          </div>
+          <div class="bar-item">
+            <div class="bar-label"><span>Позиция в поиске</span><span>×2.1</span></div>
+            <div class="bar-track"><div class="bar-fill before" style="width:30%"></div></div>
+            <div style="margin-top:6px"><div class="bar-track"><div class="bar-fill" style="width:63%"></div></div></div>
+          </div>
+          <div style="display:flex;gap:20px;margin-top:8px">
+            <div style="display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--muted)"><div style="width:20px;height:3px;background:#6B6880;border-radius:2px"></div>До</div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--muted)"><div style="width:20px;height:3px;background:var(--gold);border-radius:2px"></div>После</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROI CALCULATOR -->
+  <div class="section">
+    <div class="calc-section reveal" id="roiCalc">
+      <div class="calc-grid">
+        <div>
+          <div class="section-label">Калькулятор ROI</div>
+          <div class="section-title">Посчитайте вашу<br>окупаемость</div>
+          <p style="color:var(--muted);font-size:.9rem;line-height:1.7;margin-top:12px;margin-bottom:36px">Введите ваши текущие показатели и узнайте, сколько принесёт инфографика</p>
+          <div class="calc-inputs">
+            <div class="input-group">
+              <label>Цена товара (₽)</label>
+              <div class="input-row"><span>₽</span><input type="number" id="ri-price" value="1500" oninput="calcROI()"></div>
+            </div>
+            <div class="input-group">
+              <label>Просмотров в месяц</label>
+              <div class="input-row"><i class="fas fa-eye" style="padding:0 16px;color:var(--muted);font-size:.85rem"></i><input type="number" id="ri-views" value="3000" oninput="calcROI()"></div>
+              <input type="range" class="range-input" min="100" max="50000" step="100" value="3000" oninput="document.getElementById('ri-views').value=this.value;calcROI()">
+            </div>
+            <div class="input-group">
+              <label>Текущий CTR (%)</label>
+              <div class="input-row"><input type="number" id="ri-ctr" value="3" step="0.1" oninput="calcROI()"><span>%</span></div>
+              <input type="range" class="range-input" min="0.5" max="20" step="0.5" value="3" oninput="document.getElementById('ri-ctr').value=this.value;calcROI()">
+            </div>
+            <div class="input-group">
+              <label>Конверсия в покупку (%)</label>
+              <div class="input-row"><input type="number" id="ri-conv" value="5" step="0.1" oninput="calcROI()"><span>%</span></div>
+            </div>
+            <div class="input-group">
+              <label>Маржа (%)</label>
+              <div class="input-row"><input type="number" id="ri-margin" value="30" oninput="calcROI()"><span>%</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="calc-results" id="calcResults">
+          <div class="result-card">
+            <div class="result-label">Текущая прибыль / мес</div>
+            <div class="result-value" id="res-now">—</div>
+          </div>
+          <div class="result-card highlight">
+            <div class="result-label">Прибыль с инфографикой / мес</div>
+            <div class="result-value" id="res-after">—</div>
+            <div class="result-delta" id="res-delta"></div>
+          </div>
+          <div class="result-card">
+            <div class="result-label">Окупаемость дизайна</div>
+            <div class="result-value" id="res-payback">—</div>
+          </div>
+          <div class="result-card">
+            <div class="result-label">Доп. заказов в месяц</div>
+            <div class="result-value" id="res-orders">—</div>
+          </div>
+          <button class="btn-primary" style="width:100%;margin-top:8px;border-radius:12px" onclick="window.location.href='/services.html'">Заказать инфографику →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REVIEWS -->
+  <div class="section reveal">
+    <div class="section-label">Отзывы</div>
+    <div class="section-title">Что говорят клиенты</div>
+    <div class="reviews-grid">
+      <div class="review-card">
+        <div class="review-stars">★★★★★</div>
+        <div class="review-text">«Заменили фото на инфографику от Antviz — за 2 недели CTR вырос с 2.8% до 4.3%. Заказы пошли активнее, доволен на 100%.»</div>
+        <div class="review-author"><div class="author-avatar">М</div><div><div class="author-name">Максим Д.</div><div class="author-meta">Wildberries · Товары для дома</div></div></div>
+      </div>
+      <div class="review-card">
+        <div class="review-stars">★★★★★</div>
+        <div class="review-text">«Быстро, красиво, без лишних вопросов. Сделали карточки для OZON — сразу видно профессионалов. Буду заказывать снова.»</div>
+        <div class="review-author"><div class="author-avatar">А</div><div><div class="author-name">Алина К.</div><div class="author-meta">OZON · Косметика</div></div></div>
+      </div>
+      <div class="review-card">
+        <div class="review-stars">★★★★★</div>
+        <div class="review-text">«Презентация для инвесторов получилась шикарной. 8 слайдов, анимация, инфографика — всё на высшем уровне. Рекомендую!»</div>
+        <div class="review-author"><div class="author-avatar">П</div><div><div class="author-name">Павел С.</div><div class="author-meta">Предприниматель · Москва</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COUNTERS -->
+  <div class="section">
+    <div class="counter-grid reveal">
+      <div class="counter-card"><span class="counter-val counter2" data-target="340">0</span><span class="counter-label">Выполненных проектов</span></div>
+      <div class="counter-card"><span class="counter-val counter2" data-target="180">0</span><span class="counter-label">Уникальных клиентов</span></div>
+      <div class="counter-card"><span class="counter-val">+40%</span><span class="counter-label">Средний рост CTR</span></div>
+      <div class="counter-card"><span class="counter-val">48ч</span><span class="counter-label">Средний срок работы</span></div>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div class="section reveal">
+    <div class="section-label">FAQ</div>
+    <div class="section-title">Частые вопросы</div>
+    <div class="faq-list">
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Сколько времени занимает работа? <div class="faq-icon"><i class="fas fa-plus"></i></div></div>
+        <div class="faq-a">Стандартный срок — 24–48 часов после заполнения брифа. Для срочных заказов предусмотрена доплата 30%, и срок сокращается до 8–12 часов.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Какой формат файлов вы предоставляете? <div class="faq-icon"><i class="fas fa-plus"></i></div></div>
+        <div class="faq-a">По умолчанию — PNG в нужном разрешении под каждый маркетплейс. По запросу предоставляем PSD, PDF, AI или любой другой формат.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Что включают бесплатные правки? <div class="faq-icon"><i class="fas fa-plus"></i></div></div>
+        <div class="faq-a">В стоимость входят 2 итерации правок. Одна правка — это любой набор замечаний, переданных за один раз. Дополнительные правки — 200 ₽ за итерацию.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Работаете ли вы с самозанятыми и ООО? <div class="faq-icon"><i class="fas fa-plus"></i></div></div>
+        <div class="faq-a">Да, работаем со всеми формами. Для ИП и ООО выставляем официальный счёт с НДС или без — по договорённости.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Как происходит оплата? <div class="faq-icon"><i class="fas fa-plus"></i></div></div>
+        <div class="faq-a">Предоплата 50% перед стартом, остаток — после утверждения финальных макетов. Принимаем переводы на карту, по реквизитам и через ЮKassa.</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-grid">
+      <div><div class="footer-logo">DESIGN ANTVIZ</div><div class="footer-desc">Премиальная инфографика для Wildberries, OZON и Яндекс.Маркет. Увеличиваем продажи с 2025 года.</div>
+        <div class="socials">
+          <a class="social-btn" href="https://t.me/DESIGNANTVIZ" target="_blank"><i class="fab fa-telegram"></i></a>
+          <a class="social-btn" href="https://tiktok.com/@designantviz" target="_blank"><i class="fab fa-tiktok"></i></a>
+          <a class="social-btn" href="https://instagram.com/designantviz" target="_blank"><i class="fab fa-instagram"></i></a>
+        </div>
+      </div>
+      <div class="footer-col"><h4>Навигация</h4>
+        <a href="/index.html">Главная</a>
+        <a href="/services.html">Услуги</a>
+        <a href="/order.html">Корзина</a>
+        <a href="/contact.html">Контакты</a>
+        <a href="/chat.html">Чат поддержки</a>
+        <a href="/profile.html">Личный кабинет</a>
+        <a href="/privacy.html">Политика</a>
+        <a href="/rules.html">Правила</a>
+      </div>
+      <div class="footer-col"><h4>Контакты</h4>
+        <a href="https://t.me/DESIGNANTVIZ" target="_blank"><i class="fab fa-telegram"></i> @DESIGNANTVIZ</a>
+        <a href="https://t.me/CHANNEL_DESIGNANTVIZ" target="_blank"><i class="fab fa-telegram"></i> Канал</a>
+      </div>
+    </div>
+    <div class="copyright">© 2026 Design Antviz — Все права защищены</div>
+  </footer>
+</div>
+
+<!-- МОДАЛ АВТОРИЗАЦИИ -->
+<div class="modal-ov" id="authModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeAuthModal()"><i class="fas fa-times"></i></button>
+    <div class="modal-title">Вход / Регистрация</div>
+    <div style="display:flex;flex-direction:column;gap:16px;margin-top:24px">
+      <input type="email" id="authEmail" class="form-input" placeholder="Email">
+      <input type="password" id="authPassword" class="form-input" placeholder="Пароль">
+      <button class="btn-primary" onclick="handleLogin()">Войти</button>
+      <button class="btn-ghost" onclick="handleRegister()">Зарегистрироваться</button>
+      <button class="btn-ghost" onclick="handleResetPassword()">Забыли пароль?</button>
+      <hr style="border-color:var(--border);margin:8px 0">
+      <button class="btn-ghost" onclick="handleGoogleLogin()"><i class="fab fa-google"></i> Войти через Google</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">✦ <span id="toastText"></span></div>
+
+<script type="module">
+  import { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, googleProvider, signInWithPopup, doc, setDoc, getDoc, Timestamp } from './js/firebase-config.js';
+  import { showToast, showAuthModal, closeAuthModal } from './js/main.js';
+  import { updateCartUI } from './js/cart.js';
+  import { updateFavUI } from './js/favorites.js';
+
+  window.showAuthModal = showAuthModal;
+  window.closeAuthModal = closeAuthModal;
+
+  window.handleLogin = async () => {
+    const email = document.getElementById('authEmail').value;
+    const password = document.getElementById('authPassword').value;
+    if (!email || !password) { showToast('Заполните все поля', 'error'); return; }
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      showToast('Вход выполнен', 'success');
+      closeAuthModal();
+      setTimeout(() => window.location.reload(), 500);
+    } catch (error) {
+      let msg = 'Ошибка входа';
+      if (error.code === 'auth/invalid-credential') msg = 'Неверный email или пароль';
+      showToast(msg, 'error');
+    }
+  };
+
+  window.handleRegister = async () => {
+    const email = document.getElementById('authEmail').value;
+    const password = document.getElementById('authPassword').value;
+    if (!email || !password) { showToast('Заполните все поля', 'error'); return; }
+    if (password.length < 6) { showToast('Пароль должен быть не менее 6 символов', 'error'); return; }
+    try {
+      const userCred = await createUserWithEmailAndPassword(auth, email, password);
+      await setDoc(doc(db, 'users', userCred.user.uid), {
+        email: email,
+        displayName: email.split('@')[0],
+        role: 'user',
+        createdAt: Timestamp.now(),
+        lastLogin: Timestamp.now(),
+        isBlocked: false,
+        isDeleted: false,
+        telegram: '',
+        phone: ''
+      });
+      showToast('Регистрация успешна!', 'success');
+      closeAuthModal();
+      setTimeout(() => window.location.reload(), 500);
+    } catch (error) {
+      let msg = 'Ошибка регистрации';
+      if (error.code === 'auth/email-already-in-use') msg = 'Email уже используется';
+      showToast(msg, 'error');
+    }
+  };
+
+  window.handleGoogleLogin = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const userRef = doc(db, 'users', result.user.uid);
+      const userDoc = await getDoc(userRef);
+      if (!userDoc.exists()) {
+        await setDoc(userRef, {
+          email: result.user.email,
+          displayName: result.user.displayName || result.user.email.split('@')[0],
+          role: 'user',
+          createdAt: Timestamp.now(),
+          lastLogin: Timestamp.now(),
+          isBlocked: false,
+          isDeleted: false,
+          telegram: '',
+          phone: '',
+          avatar: result.user.photoURL || ''
+        });
+      }
+      showToast('Вход выполнен', 'success');
+      closeAuthModal();
+      setTimeout(() => window.location.reload(), 500);
+    } catch (error) {
+      showToast('Ошибка входа через Google', 'error');
+    }
+  };
+
+  window.handleResetPassword = async () => {
+    const email = document.getElementById('authEmail').value;
+    if (!email) { showToast('Введите email', 'error'); return; }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      showToast('Ссылка для сброса пароля отправлена', 'success');
+    } catch (error) {
+      showToast('Пользователь не найден', 'error');
+    }
+  };
+
+  window.calcROI = () => {
+    const price = +document.getElementById('ri-price')?.value || 0;
+    const views = +document.getElementById('ri-views')?.value || 0;
+    const ctr = +document.getElementById('ri-ctr')?.value || 0;
+    const conv = +document.getElementById('ri-conv')?.value || 0;
+    const margin = +document.getElementById('ri-margin')?.value || 0;
+    const clicks = views * ctr / 100;
+    const orders = clicks * conv / 100;
+    const profit = orders * price * margin / 100;
+    const newProfit = profit * 1.4;
+    const payback = profit > 0 ? Math.ceil(200 / ((newProfit - profit) / 30)) : 0;
+    if (document.getElementById('res-now')) document.getElementById('res-now').textContent = Math.round(profit) + ' ₽';
+    if (document.getElementById('res-after')) document.getElementById('res-after').textContent = Math.round(newProfit) + ' ₽';
+    if (document.getElementById('res-delta')) document.getElementById('res-delta').textContent = `+${Math.round(newProfit - profit)} ₽ / мес`;
+    if (document.getElementById('res-payback')) document.getElementById('res-payback').textContent = payback > 0 && payback < 31 ? payback + ' дней' : 'менее месяца';
+    if (document.getElementById('res-orders')) document.getElementById('res-orders').textContent = '+' + Math.round(orders * 0.4);
+  };
+
+  window.toggleFaq = (el) => {
+    const item = el.parentElement;
+    const ans = item.querySelector('.faq-a');
+    const wasOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach(i => {
+      i.classList.remove('open');
+      i.querySelector('.faq-a')?.classList.remove('open');
+    });
+    if (!wasOpen) {
+      item.classList.add('open');
+      ans.classList.add('open');
+    }
+  };
+
+  document.getElementById('calcBtn')?.addEventListener('click', () => {
+    document.getElementById('roiCalc')?.scrollIntoView({ behavior: 'smooth' });
+  });
+
+  function animCounters() {
+    document.querySelectorAll('.counter,.counter2').forEach(el => {
+      const target = +el.dataset.target;
+      let current = 0;
+      const step = target / 60;
+      const timer = setInterval(() => {
+        current = Math.min(current + step, target);
+        el.textContent = Math.floor(current);
+        if (current >= target) clearInterval(timer);
+      }, 16);
+    });
+  }
+  function animBars() { document.querySelectorAll('.bar-fill').forEach(b => b.classList.add('animate')); }
+  setTimeout(animBars, 1200);
+  setTimeout(animCounters, 800);
+
+  document.addEventListener('DOMContentLoaded', () => {
+    updateCartUI();
+    updateFavUI();
+    window.calcROI();
+  });
+</script>
+</body>
+</html>
