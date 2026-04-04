@@ -1,10 +1,12 @@
-import { auth, onAuthStateChanged, signOut, doc, getDoc, db, Timestamp, updateDoc } from './firebase-config.js';
+// Импорты Firebase
+import { auth, onAuthStateChanged, doc, getDoc, db } from './firebase-config.js';
+import { updateNavAuth, checkIsAdmin } from './auth.js';
 
 // Глобальные переменные
 let currentUser = null;
-let isAdmin = false;
+let currentIsAdmin = false;
 
-// Показать уведомление
+// ========== УВЕДОМЛЕНИЯ ==========
 export function showToast(message, type = 'success') {
     const toast = document.getElementById('toast');
     const textSpan = document.getElementById('toastText');
@@ -12,7 +14,6 @@ export function showToast(message, type = 'success') {
     
     textSpan.textContent = message;
     
-    // Меняем цвет в зависимости от типа
     if (type === 'error') {
         toast.style.background = '#EF4444';
         toast.style.color = '#fff';
@@ -28,7 +29,6 @@ export function showToast(message, type = 'success') {
     setTimeout(() => toast.classList.remove('show'), 3000);
 }
 
-// Показать/скрыть глобальный лоадер
 export function showLoading(show) {
     let loader = document.getElementById('global-loader');
     if (!loader && show) {
@@ -38,7 +38,6 @@ export function showLoading(show) {
         loader.innerHTML = '<div style="width:50px;height:50px;border:3px solid var(--gold);border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite"></div>';
         document.body.appendChild(loader);
         
-        // Добавляем анимацию, если её нет
         if (!document.querySelector('#loader-style')) {
             const style = document.createElement('style');
             style.id = 'loader-style';
@@ -49,57 +48,7 @@ export function showLoading(show) {
     if (loader) loader.style.display = show ? 'flex' : 'none';
 }
 
-// Проверка, является ли пользователь админом (через custom claims)
-export async function checkIsAdmin(user) {
-    if (!user) return false;
-    try {
-        const idTokenResult = await user.getIdTokenResult();
-        return idTokenResult.claims.admin === true;
-    } catch (error) {
-        console.error('Ошибка проверки прав админа:', error);
-        return false;
-    }
-}
-
-// Обновление навигации в зависимости от авторизации
-export function updateNavAuth(user) {
-    const authContainer = document.getElementById('authContainer');
-    if (!authContainer) return;
-    
-    if (user) {
-        // Пользователь авторизован - показываем аватар
-        authContainer.innerHTML = `
-            <div class="user-avatar" onclick="window.location.href='/profile.html'">
-                <i class="fas fa-user"></i>
-            </div>
-        `;
-        
-        // Показываем ссылку на админку если пользователь админ
-        const adminLink = document.querySelector('.admin-link');
-        if (adminLink) {
-            checkIsAdmin(user).then(isAdmin => {
-                adminLink.style.display = isAdmin ? 'block' : 'none';
-            });
-        }
-    } else {
-        // Пользователь не авторизован - показываем кнопку входа
-        authContainer.innerHTML = `<button class="auth-btn" onclick="window.showAuthModal && window.showAuthModal()">Войти / Регистрация</button>`;
-    }
-}
-
-// Показать модалку авторизации
-export function showAuthModal() {
-    const modal = document.getElementById('authModal');
-    if (modal) modal.classList.add('open');
-}
-
-// Закрыть модалку авторизации
-export function closeAuthModal() {
-    const modal = document.getElementById('authModal');
-    if (modal) modal.classList.remove('open');
-}
-
-// Звездное поле (твой оригинал)
+// ========== ЗВЕЗДНОЕ ПОЛЕ (ТВОЙ ОРИГИНАЛ) ==========
 export function initStarfield() {
     const canvas = document.getElementById('starfield');
     if (!canvas) return;
@@ -140,7 +89,7 @@ export function initStarfield() {
     drawStars();
 }
 
-// Кастомный курсор (твой оригинал)
+// ========== КАСТОМНЫЙ КУРСОР (ТВОЙ ОРИГИНАЛ) ==========
 export function initCursor() {
     const cur = document.getElementById('cursor');
     const trail = document.getElementById('cursorTrail');
@@ -165,25 +114,36 @@ export function initCursor() {
     
     animTrail();
     
-    // Эффекты при наведении на кликабельные элементы
-    const clickableElements = document.querySelectorAll('button, a, .service-card, .faq-q, .add-btn, .nav-cta, .auth-btn, .quick-btn, .admin-tab');
-    clickableElements.forEach(el => {
-        el.addEventListener('mouseenter', () => {
-            cur.style.width = '20px';
-            cur.style.height = '20px';
-            cur.style.background = 'transparent';
-            cur.style.border = '2px solid var(--gold)';
+    function updateCursorOnHover(elements) {
+        elements.forEach(el => {
+            if (!el) return;
+            el.addEventListener('mouseenter', () => {
+                cur.style.width = '20px';
+                cur.style.height = '20px';
+                cur.style.background = 'transparent';
+                cur.style.border = '2px solid var(--gold)';
+            });
+            el.addEventListener('mouseleave', () => {
+                cur.style.width = '10px';
+                cur.style.height = '10px';
+                cur.style.background = 'var(--gold)';
+                cur.style.border = 'none';
+            });
         });
-        el.addEventListener('mouseleave', () => {
-            cur.style.width = '10px';
-            cur.style.height = '10px';
-            cur.style.background = 'var(--gold)';
-            cur.style.border = 'none';
-        });
+    }
+    
+    // Обновляем курсор для динамических элементов
+    const observer = new MutationObserver(() => {
+        const elements = document.querySelectorAll('button, a, .service-card, .faq-q, .add-btn, .nav-cta, .auth-btn, .quick-btn, .admin-tab, .fav-icon, .cart-icon, .user-avatar');
+        updateCursorOnHover(elements);
     });
+    observer.observe(document.body, { childList: true, subtree: true });
+    
+    const initialElements = document.querySelectorAll('button, a, .service-card, .faq-q, .add-btn, .nav-cta, .auth-btn, .quick-btn, .admin-tab, .fav-icon, .cart-icon, .user-avatar');
+    updateCursorOnHover(initialElements);
 }
 
-// Scroll reveal анимация (твой оригинал)
+// ========== SCROLL REVEAL (ТВОЙ ОРИГИНАЛ) ==========
 export function initReveal() {
     const observer = new IntersectionObserver(entries => {
         entries.forEach(e => {
@@ -197,7 +157,7 @@ export function initReveal() {
     document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 }
 
-// Navbar скролл эффект (твой оригинал)
+// ========== NAVBAR СКРОЛЛ (ТВОЙ ОРИГИНАЛ) ==========
 export function initNavbar() {
     window.addEventListener('scroll', () => {
         const nav = document.getElementById('navbar');
@@ -207,94 +167,215 @@ export function initNavbar() {
     });
 }
 
-// Отправка email уведомления через Cloudflare Worker
-export async function sendEmailNotification(to, subject, body) {
+// ========== АНИМАЦИЯ СЧЕТЧИКОВ (ТВОЙ ОРИГИНАЛ) ==========
+export function initCounters() {
+    const counters = document.querySelectorAll('.counter, .counter2');
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const el = entry.target;
+                const target = parseInt(el.dataset.target);
+                if (!target || isNaN(target)) return;
+                
+                let current = 0;
+                const step = target / 60;
+                const timer = setInterval(() => {
+                    current = Math.min(current + step, target);
+                    el.textContent = Math.floor(current);
+                    if (current >= target) clearInterval(timer);
+                }, 16);
+                
+                observer.unobserve(el);
+            }
+        });
+    }, { threshold: 0.5 });
+    
+    counters.forEach(counter => observer.observe(counter));
+}
+
+// ========== АНИМАЦИЯ БАРОВ (ТВОЙ ОРИГИНАЛ) ==========
+export function initBars() {
+    const bars = document.querySelectorAll('.bar-fill');
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animate');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.5 });
+    
+    bars.forEach(bar => observer.observe(bar));
+}
+
+// ========== FAQ TOGGLE (ТВОЙ ОРИГИНАЛ) ==========
+export function initFaq() {
+    window.toggleFaq = function(el) {
+        const item = el.parentElement;
+        const ans = item.querySelector('.faq-a');
+        const wasOpen = item.classList.contains('open');
+        
+        document.querySelectorAll('.faq-item').forEach(i => {
+            i.classList.remove('open');
+            const a = i.querySelector('.faq-a');
+            if (a) a.classList.remove('open');
+        });
+        
+        if (!wasOpen) {
+            item.classList.add('open');
+            if (ans) ans.classList.add('open');
+        }
+    };
+}
+
+// ========== КАЛЬКУЛЯТОР ROI (ТВОЙ ОРИГИНАЛ) ==========
+export function initROICalculator() {
+    window.calcROI = function() {
+        const price = +document.getElementById('ri-price')?.value || 0;
+        const views = +document.getElementById('ri-views')?.value || 0;
+        const ctr = +document.getElementById('ri-ctr')?.value || 0;
+        const conv = +document.getElementById('ri-conv')?.value || 0;
+        const margin = +document.getElementById('ri-margin')?.value || 0;
+        
+        const clicks = views * ctr / 100;
+        const orders = clicks * conv / 100;
+        const profit = orders * price * margin / 100;
+        const newProfit = profit * 1.4;
+        const delta = newProfit - profit;
+        const designCost = 200;
+        const payback = delta > 0 ? Math.ceil(designCost / (delta / 30)) : 0;
+        
+        const fmt = (n) => n >= 1000 ? Math.round(n/100)/10 + 'к' : Math.round(n);
+        
+        const resNow = document.getElementById('res-now');
+        const resAfter = document.getElementById('res-after');
+        const resDelta = document.getElementById('res-delta');
+        const resPayback = document.getElementById('res-payback');
+        const resOrders = document.getElementById('res-orders');
+        
+        if (resNow) resNow.textContent = fmt(profit) + ' ₽';
+        if (resAfter) resAfter.textContent = fmt(newProfit) + ' ₽';
+        if (resDelta) resDelta.textContent = `+${fmt(delta)} ₽ / мес дополнительно`;
+        if (resPayback) resPayback.textContent = (payback > 0 && payback < 31) ? payback + ' дней' : '< мес';
+        if (resOrders) resOrders.textContent = '+' + Math.round(newOrders - orders);
+    };
+    
+    const calcBtn = document.getElementById('calcBtn');
+    if (calcBtn) {
+        calcBtn.addEventListener('click', () => {
+            const roiSection = document.getElementById('roiCalc');
+            if (roiSection) roiSection.scrollIntoView({ behavior: 'smooth' });
+        });
+    }
+    
+    if (document.getElementById('ri-price')) window.calcROI();
+}
+
+// ========== МОДАЛКИ ==========
+export function showAuthModal() {
+    const modal = document.getElementById('authModal');
+    if (modal) modal.classList.add('open');
+}
+
+export function closeAuthModal() {
+    const modal = document.getElementById('authModal');
+    if (modal) modal.classList.remove('open');
+}
+
+// Закрытие модалки по клику вне области
+document.addEventListener('click', function(e) {
+    const modal = document.getElementById('authModal');
+    if (e.target === modal) closeAuthModal();
+    
+    const serviceModal = document.getElementById('modalOv');
+    if (e.target === serviceModal && window.closeModal) window.closeModal();
+});
+
+// ========== ОБНОВЛЕНИЕ НАВИГАЦИИ ==========
+export function updateNavAuthUI(user) {
+    const authContainer = document.getElementById('authContainer');
+    if (!authContainer) return;
+    
+    if (user) {
+        authContainer.innerHTML = `
+            <div class="user-avatar" onclick="window.location.href='/profile.html'">
+                <i class="fas fa-user"></i>
+            </div>
+        `;
+    } else {
+        authContainer.innerHTML = `<button class="auth-btn" onclick="window.showAuthModal && window.showAuthModal()">Войти / Регистрация</button>`;
+    }
+}
+
+// ========== ПРОВЕРКА АДМИНА ==========
+export async function isUserAdmin(user) {
+    if (!user) return false;
     try {
-        // Здесь будет вызов твоего Cloudflare Worker для отправки email
-        // Пока просто логируем в консоль
-        console.log(`Email уведомление: ${to} - ${subject} - ${body}`);
-        
-        // Когда настроишь Cloudflare Worker, раскомментируй:
-        // const response = await fetch('https://твой-воркер.workers.dev/send-email', {
-        //     method: 'POST',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify({ to, subject, body })
-        // });
-        // return response.ok;
-        
-        return true;
+        const idTokenResult = await user.getIdTokenResult();
+        return idTokenResult.claims.admin === true;
     } catch (error) {
-        console.error('Ошибка отправки email:', error);
         return false;
     }
 }
 
-// Получить текущего пользователя
-export function getCurrentUser() {
-    return currentUser;
-}
-
-// Установить текущего пользователя
-export function setCurrentUser(user) {
-    currentUser = user;
-}
-
-// Получить статус админа
-export function getIsAdmin() {
-    return isAdmin;
-}
-
-// Инициализация auth listener
+// ========== ГЛОБАЛЬНЫЙ AUTH LISTENER ==========
 export function initAuthListener() {
     onAuthStateChanged(auth, async (user) => {
         currentUser = user;
-        updateNavAuth(user);
+        updateNavAuthUI(user);
         
         if (user) {
-            isAdmin = await checkIsAdmin(user);
+            currentIsAdmin = await isUserAdmin(user);
             
-            // Обновляем профиль пользователя в Firestore при входе
-            const userRef = doc(db, 'users', user.uid);
-            const userDoc = await getDoc(userRef);
-            
-            if (!userDoc.exists()) {
-                await setDoc(userRef, {
-                    email: user.email,
-                    displayName: user.displayName || user.email.split('@')[0],
-                    role: isAdmin ? 'admin' : 'user',
-                    createdAt: Timestamp.now(),
-                    lastLogin: Timestamp.now(),
-                    isBlocked: false,
-                    telegram: '',
-                    phone: '',
-                    emailVerified: user.emailVerified
-                });
-            } else {
-                await updateDoc(userRef, {
-                    lastLogin: Timestamp.now(),
-                    emailVerified: user.emailVerified
-                });
+            // Показываем/скрываем ссылку на админку
+            const adminLink = document.querySelector('.admin-link');
+            if (adminLink) {
+                adminLink.style.display = currentIsAdmin ? 'block' : 'none';
             }
+        } else {
+            currentIsAdmin = false;
         }
+        
+        // Обновляем корзину и избранное
+        if (window.updateCartUI) window.updateCartUI();
+        if (window.updateFavUI) window.updateFavUI();
     });
 }
 
-// Инициализация всего
+// ========== ОТПРАВКА EMAIL УВЕДОМЛЕНИЙ (ЧЕРЕЗ CLOUDFLARE) ==========
+export async function sendEmailNotification(to, subject, body) {
+    try {
+        // Здесь будет твой Cloudflare Worker
+        console.log(`📧 Email: ${to} - ${subject}`);
+        return true;
+    } catch (error) {
+        console.error('Email error:', error);
+        return false;
+    }
+}
+
+// ========== ИНИЦИАЛИЗАЦИЯ ВСЕГО ==========
 export function initApp() {
     initStarfield();
     initCursor();
-    initReveal();
     initNavbar();
+    initReveal();
+    initCounters();
+    initBars();
+    initFaq();
+    initROICalculator();
     initAuthListener();
 }
 
-// Запускаем инициализацию при загрузке DOM
+// Запускаем при загрузке DOM
 document.addEventListener('DOMContentLoaded', () => {
     initApp();
 });
 
-// Экспортируем функции в глобальный объект window для использования в HTML
+// Экспорт глобальных функций
 window.showToast = showToast;
 window.showAuthModal = showAuthModal;
 window.closeAuthModal = closeAuthModal;
-window.getCurrentUser = getCurrentUser;
+window.sendEmailNotification = sendEmailNotification;
