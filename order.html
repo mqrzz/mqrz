@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Корзина — Design Antviz</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;500;600;700;800;900&family=Onest:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<canvas id="starfield"></canvas>
+<div class="cursor" id="cursor"></div>
+<div class="cursor-trail" id="cursorTrail"></div>
+
+<nav id="navbar">
+  <div class="nav-logo" onclick="window.location.href='/index.html'">DESIGN ANTVIZ</div>
+  <div class="nav-links">
+    <a href="/index.html">Главная</a>
+    <a href="/services.html">Услуги</a>
+    <a href="/contact.html">Контакты</a>
+    <a href="/chat.html">Чат поддержки</a>
+    <a href="/admin.html" class="admin-link" style="display:none">Админ-панель</a>
+    <div class="fav-icon" onclick="window.location.href='/favorites.html'">
+      <i class="fas fa-heart"></i>
+      <div class="cart-count" id="favCountBadge">0</div>
+    </div>
+    <div class="cart-icon" onclick="window.location.href='/order.html'">
+      <i class="fas fa-shopping-bag"></i>
+      <div class="cart-count" id="cartCountBadge">0</div>
+    </div>
+    <div id="authContainer" class="auth-buttons">
+      <button class="auth-btn" onclick="showAuthModal()">Войти / Регистрация</button>
+    </div>
+  </div>
+</nav>
+
+<div class="page active">
+  <div class="page-inner">
+    <h1>Корзина</h1>
+    <p class="page-sub">Проверьте заказ и оставьте контакты</p>
+    
+    <div id="cartItemsList" class="cart-list"></div>
+    
+    <div id="cartTotalBlock" style="display:none" class="cart-total">
+      <div>
+        <div class="cart-total-label">Сумма</div>
+        <div id="cartSubtotalVal" style="font-size:1.2rem">0 ₽</div>
+        <div id="cartDiscountInfo" class="promo-discount" style="display:none"></div>
+      </div>
+      <div class="cart-total-val" id="cartTotalVal">0 ₽</div>
+    </div>
+    
+    <div id="promoSection" style="display:none">
+      <div class="promo-code-input">
+        <input type="text" id="promoCodeInput" placeholder="Введите промокод">
+        <button class="btn-ghost" onclick="applyPromoCode()">Применить</button>
+      </div>
+      <div id="promoMessage"></div>
+    </div>
+    
+    <form class="order-form" id="orderForm">
+      <div class="form-group">
+        <label>Ваше имя</label>
+        <input class="form-input" id="clientName" type="text" placeholder="Как к вам обращаться?" required>
+      </div>
+      <div class="form-group">
+        <label>Telegram</label>
+        <input class="form-input" id="clientTg" type="text" placeholder="@username" required>
+      </div>
+      <div class="form-group">
+        <label>Телефон (необязательно)</label>
+        <input class="form-input" id="clientPhone" type="tel" placeholder="+7...">
+      </div>
+      <div class="form-group">
+        <label>Email (для уведомлений)</label>
+        <input class="form-input" id="clientEmail" type="email" placeholder="your@email.com">
+      </div>
+      <div class="form-group">
+        <label>Комментарий (необязательно)</label>
+        <textarea class="form-input" id="clientComment" placeholder="Расскажите о товаре, пожеланиях по стилю..."></textarea>
+      </div>
+      <div class="form-check">
+        <input type="checkbox" id="privacyCheckbox">
+        <label for="privacyCheckbox">Я принимаю <a href="/privacy.html" style="color:var(--gold);cursor:pointer">политику конфиденциальности</a> и <a href="/rules.html" style="color:var(--gold);cursor:pointer">правила сервиса</a></label>
+      </div>
+      <button type="submit" class="submit-btn">Отправить заказ →</button>
+    </form>
+  </div>
+</div>
+
+<!-- МОДАЛ УСПЕШНОГО ЗАКАЗА -->
+<div class="success-ov" id="successOv">
+  <div class="success-box">
+    <div class="success-icon">✦</div>
+    <h3>Заказ принят!</h3>
+    <p>Мы напишем вам в Telegram в течение 15 минут.</p>
+    <div class="tg-badge"><i class="fab fa-telegram"></i> @DESIGNANTVIZ</div>
+    <p style="font-size:.8rem;color:var(--muted);margin-top:8px">⚠️ Разрешите сообщения от незнакомцев: Настройки → Конфиденциальность → Сообщения → Все</p>
+    <button class="btn-primary" style="margin-top:24px;border-radius:12px" onclick="closeSuccess()">Закрыть</button>
+  </div>
+</div>
+
+<!-- МОДАЛ АВТОРИЗАЦИИ -->
+<div class="modal-ov" id="authModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeAuthModal()"><i class="fas fa-times"></i></button>
+    <div class="modal-title">Вход / Регистрация</div>
+    <div style="display:flex;flex-direction:column;gap:16px;margin-top:24px">
+      <input type="email" id="authEmail" class="form-input" placeholder="Email">
+      <input type="password" id="authPassword" class="form-input" placeholder="Пароль">
+      <button class="btn-primary" onclick="handleLogin()">Войти</button>
+      <button class="btn-ghost" onclick="handleRegister()">Зарегистрироваться</button>
+      <button class="btn-ghost" onclick="handleResetPassword()">Забыли пароль?</button>
+      <hr style="border-color:var(--border);margin:8px 0">
+      <button class="btn-ghost" onclick="handleGoogleLogin()"><i class="fab fa-google"></i> Войти через Google</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">✦ <span id="toastText"></span></div>
+
+<script type="module">
+  import { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, googleProvider, signInWithPopup, doc, setDoc, getDoc, Timestamp, collection, addDoc, query, where, getDocs } from './js/firebase-config.js';
+  import { showToast, showAuthModal, closeAuthModal } from './js/main.js';
+  import { updateCartUI, updateFavUI } from './js/favorites.js';
+  import { cart, getCartTotal, applyPromoCode, clearPromo, saveOrder, renderCartPage } from './js/cart.js';
+
+  let currentPromoDiscount = 0;
+  let currentPromoCode = null;
+
+  window.showAuthModal = showAuthModal;
+  window.closeAuthModal = closeAuthModal;
+
+  window.handleLogin = async () => {
+    const email = document.getElementById('authEmail').value;
+    const password = document.getElementById('authPassword').value;
+    if (!email || !password) { showToast('Заполните все поля', 'error'); return; }
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      showToast('Вход выполнен', 'success');
+      closeAuthModal();
+      setTimeout(() => window.location.reload(), 500);
+    } catch (error) {
+      let msg = 'Ошибка входа';
+      if (error.code === 'auth/invalid-credential') msg = 'Неверный email или пароль';
+      showToast(msg, 'error');
+    }
+  };
+
+  window.handleRegister = async () => {
+    const email = document.getElementById('authEmail').value;
+    const password = document.getElementById('authPassword').value;
+    if (!email || !password) { showToast('Заполните все поля', 'error'); return; }
+    if (password.length < 6) { showToast('Пароль должен быть не менее 6 символов', 'error'); return; }
+    try {
+      const userCred = await createUserWithEmailAndPassword(auth, email, password);
+      await setDoc(doc(db, 'users', userCred.user.uid), {
+        email: email,
+        displayName: email.split('@')[0],
+        role: 'user',
+        createdAt: Timestamp.now(),
+        lastLogin: Timestamp.now(),
+        isBlocked: false,
+        isDeleted: false,
+        telegram: '',
+        phone: ''
+      });
+      showToast('Регистрация успешна!', 'success');
+      closeAuthModal();
+      setTimeout(() => window.location.reload(), 500);
+    } catch (error) {
+      let msg = 'Ошибка регистрации';
+      if (error.code === 'auth/email-already-in-use') msg = 'Email уже используется';
+      showToast(msg, 'error');
+    }
+  };
+
+  window.handleGoogleLogin = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const userRef = doc(db, 'users', result.user.uid);
+      const userDoc = await getDoc(userRef);
+      if (!userDoc.exists()) {
+        await setDoc(userRef, {
+          email: result.user.email,
+          displayName: result.user.displayName || result.user.email.split('@')[0],
+          role: 'user',
+          createdAt: Timestamp.now(),
+          lastLogin: Timestamp.now(),
+          isBlocked: false,
+          isDeleted: false,
+          telegram: '',
+          phone: '',
+          avatar: result.user.photoURL || ''
+        });
+      }
+      showToast('Вход выполнен', 'success');
+      closeAuthModal();
+      setTimeout(() => window.location.reload(), 500);
+    } catch (error) {
+      showToast('Ошибка входа через Google', 'error');
+    }
+  };
+
+  window.handleResetPassword = async () => {
+    const email = document.getElementById('authEmail').value;
+    if (!email) { showToast('Введите email', 'error'); return; }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      showToast('Ссылка для сброса пароля отправлена', 'success');
+    } catch (error) {
+      showToast('Пользователь не найден', 'error');
+    }
+  };
+
+  window.applyPromoCode = async () => {
+    const code = document.getElementById('promoCodeInput').value.trim();
+    if (!code) { showToast('Введите промокод', 'error'); return; }
+    
+    try {
+      const promosRef = collection(db, 'promocodes');
+      const q = query(promosRef, where('code', '==', code.toUpperCase()), where('isActive', '==', true));
+      const snapshot = await getDocs(q);
+      
+      if (snapshot.empty) {
+        showToast('Промокод не найден', 'error');
+        return;
+      }
+      
+      const promo = snapshot.docs[0].data();
+      const now = new Date();
+      const expiresAt = promo.expiresAt?.toDate();
+      
+      if (expiresAt && expiresAt < now) {
+        showToast('Промокод истек', 'error');
+        return;
+      }
+      
+      const { subtotal } = getCartTotal();
+      let discount = 0;
+      
+      if (promo.type === 'percentage') {
+        discount = subtotal * promo.value / 100;
+      } else {
+        discount = promo.value;
+      }
+      
+      currentPromoDiscount = Math.min(discount, subtotal);
+      currentPromoCode = promo.code;
+      
+      showToast(`Промокод применен! Скидка ${promo.type === 'percentage' ? promo.value + '%' : promo.value + ' ₽'}`, 'success');
+      renderCartPageWithPromo();
+      
+    } catch (error) {
+      console.error('Promo error:', error);
+      showToast('Ошибка проверки промокода', 'error');
+    }
+  };
+
+  function renderCartPageWithPromo() {
+    const container = document.getElementById('cartItemsList');
+    const totalBlock = document.getElementById('cartTotalBlock');
+    const promoSection = document.getElementById('promoSection');
+    
+    if (!container) return;
+    
+    if (cart.length === 0) {
+      container.innerHTML = '<div class="empty-cart"><i class="fas fa-shopping-bag"></i>Корзина пуста<br><small>Добавьте услуги из каталога</small></div>';
+      if (totalBlock) totalBlock.style.display = 'none';
+      if (promoSection) promoSection.style.display = 'none';
+      return;
+    }
+    
+    const subtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+    const total = subtotal - currentPromoDiscount;
+    
+    container.innerHTML = cart.map((item, idx) => `
+      <div class="cart-item">
+        <div class="cart-item-info">
+          <div class="cart-item-name">${item.name}</div>
+          <div class="cart-item-meta">${item.price} ₽ × ${item.quantity}</div>
+        </div>
+        <div class="cart-item-right">
+          <span class="cart-item-price">${item.price * item.quantity} ₽</span>
+          <button class="remove-btn" onclick="removeCartItem(${idx})"><i class="fas fa-trash-alt"></i></button>
+        </div>
+      </div>
+    `).join('');
+    
+    if (totalBlock) {
+      document.getElementById('cartSubtotalVal').textContent = subtotal + ' ₽';
+      if (currentPromoDiscount > 0) {
+        document.getElementById('cartDiscountInfo').style.display = 'block';
+        document.getElementById('cartDiscountInfo').textContent = `Скидка по промокоду: -${currentPromoDiscount} ₽`;
+      } else {
+        document.getElementById('cartDiscountInfo').style.display = 'none';
+      }
+      document.getElementById('cartTotalVal').textContent = total + ' ₽';
+      totalBlock.style.display = 'flex';
+      promoSection.style.display = 'block';
+    }
+  }
+
+  window.removeCartItem = (idx) => {
+    cart.splice(idx, 1);
+    localStorage.setItem('cart', JSON.stringify(cart));
+    updateCartUI();
+    renderCartPageWithPromo();
+  };
+
+  window.closeSuccess = () => {
+    document.getElementById('successOv').classList.remove('open');
+    window.location.href = '/index.html';
+  };
+
+  document.getElementById('orderForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    if (!document.getElementById('privacyCheckbox').checked) {
+      showToast('Подтвердите согласие с правилами', 'error');
+      return;
+    }
+    
+    if (cart.length === 0) {
+      showToast('Корзина пуста', 'error');
+      return;
+    }
+    
+    const name = document.getElementById('clientName').value.trim();
+    const tg = document.getElementById('clientTg').value.trim();
+    const phone = document.getElementById('clientPhone').value.trim();
+    const email = document.getElementById('clientEmail').value.trim();
+    const comment = document.getElementById('clientComment').value;
+    
+    if (!name || !tg) {
+      showToast('Заполните имя и Telegram', 'error');
+      return;
+    }
+    
+    const subtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+    const total = subtotal - currentPromoDiscount;
+    const user = auth.currentUser;
+    
+    const orderData = {
+      name: name,
+      telegram: tg,
+      phone: phone,
+      email: email || user?.email || '',
+      comment: comment,
+      subtotal: subtotal,
+      discount: currentPromoDiscount,
+      promoCode: currentPromoCode,
+      total: total,
+      userId: user?.uid || null,
+      userEmail: user?.email || email
+    };
+    
+    const result = await saveOrder(orderData);
+    
+    if (result.success) {
+      // Очищаем корзину и промокод
+      cart.length = 0;
+      localStorage.setItem('cart', JSON.stringify(cart));
+      currentPromoDiscount = 0;
+      currentPromoCode = null;
+      updateCartUI();
+      
+      document.getElementById('successOv').classList.add('open');
+      e.target.reset();
+    } else {
+      showToast('Ошибка оформления заказа', 'error');
+    }
+  });
+
+  // Автозаполнение email если пользователь авторизован
+  auth.onAuthStateChanged((user) => {
+    updateCartUI();
+    updateFavUI();
+    if (user && document.getElementById('clientEmail')) {
+      document.getElementById('clientEmail').value = user.email || '';
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    renderCartPageWithPromo();
+  });
+</script>
+</body>
+</html>
