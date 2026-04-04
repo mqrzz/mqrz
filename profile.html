@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Личный кабинет — Design Antviz</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;500;600;700;800;900&family=Onest:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<canvas id="starfield"></canvas>
+<div class="cursor" id="cursor"></div>
+<div class="cursor-trail" id="cursorTrail"></div>
+
+<nav id="navbar">
+  <div class="nav-logo" onclick="window.location.href='/index.html'">DESIGN ANTVIZ</div>
+  <div class="nav-links">
+    <a href="/index.html">Главная</a>
+    <a href="/services.html">Услуги</a>
+    <a href="/contact.html">Контакты</a>
+    <a href="/chat.html">Чат поддержки</a>
+    <a href="/admin.html" class="admin-link" style="display:none">Админ-панель</a>
+    <div class="fav-icon" onclick="window.location.href='/favorites.html'">
+      <i class="fas fa-heart"></i>
+      <div class="cart-count" id="favCountBadge">0</div>
+    </div>
+    <div class="cart-icon" onclick="window.location.href='/order.html'">
+      <i class="fas fa-shopping-bag"></i>
+      <div class="cart-count" id="cartCountBadge">0</div>
+    </div>
+    <div id="authContainer" class="auth-buttons">
+      <button class="auth-btn" onclick="showAuthModal()">Войти / Регистрация</button>
+    </div>
+  </div>
+</nav>
+
+<div class="page active">
+  <div class="page-inner" style="max-width:1000px">
+    <h1>Личный кабинет</h1>
+    <p class="page-sub" id="profileUserName">Загрузка...</p>
+    
+    <!-- Вкладки -->
+    <div class="admin-tabs" style="margin-bottom:32px">
+      <div class="admin-tab active" onclick="switchProfileTab('orders')">📦 Мои заказы</div>
+      <div class="admin-tab" onclick="switchProfileTab('favorites')">❤️ Избранное</div>
+      <div class="admin-tab" onclick="switchProfileTab('settings')">⚙️ Настройки</div>
+    </div>
+    
+    <!-- Вкладка Заказы -->
+    <div id="profileOrdersTab">
+      <div class="section-label">История заказов</div>
+      <div id="orderHistoryList" class="admin-orders-list" style="max-height:500px"></div>
+    </div>
+    
+    <!-- Вкладка Избранное -->
+    <div id="profileFavoritesTab" style="display:none">
+      <div class="section-label">Избранные услуги</div>
+      <div id="profileFavoritesList" class="favorites-grid"></div>
+    </div>
+    
+    <!-- Вкладка Настройки -->
+    <div id="profileSettingsTab" style="display:none">
+      <div class="section-label">Настройки профиля</div>
+      <div class="admin-panel">
+        <div class="form-group" style="margin-bottom:16px">
+          <label>Отображаемое имя</label>
+          <input type="text" id="profileDisplayName" class="form-input" placeholder="Имя">
+        </div>
+        <div class="form-group" style="margin-bottom:16px">
+          <label>Telegram</label>
+          <input type="text" id="profileTelegram" class="form-input" placeholder="@username">
+        </div>
+        <div class="form-group" style="margin-bottom:16px">
+          <label>Телефон</label>
+          <input type="tel" id="profilePhone" class="form-input" placeholder="+7...">
+        </div>
+        <div class="form-group" style="margin-bottom:16px">
+          <label>Email</label>
+          <input type="email" id="profileEmail" class="form-input" readonly disabled style="opacity:0.7">
+        </div>
+        <div style="display:flex; gap:16px; flex-wrap:wrap">
+          <button class="btn-primary" onclick="updateProfile()">Сохранить изменения</button>
+          <button class="btn-ghost" onclick="resetPassword()">Сменить пароль</button>
+          <button class="btn-danger" onclick="deleteAccount()">Удалить аккаунт</button>
+        </div>
+      </div>
+    </div>
+    
+    <button class="btn-ghost" style="margin-top:40px" onclick="logout()">Выйти из аккаунта</button>
+  </div>
+</div>
+
+<!-- МОДАЛ АВТОРИЗАЦИИ -->
+<div class="modal-ov" id="authModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeAuthModal()"><i class="fas fa-times"></i></button>
+    <div class="modal-title">Вход / Регистрация</div>
+    <div style="display:flex;flex-direction:column;gap:16px;margin-top:24px">
+      <input type="email" id="authEmail" class="form-input" placeholder="Email">
+      <input type="password" id="authPassword" class="form-input" placeholder="Пароль">
+      <button class="btn-primary" onclick="handleLogin()">Войти</button>
+      <button class="btn-ghost" onclick="handleRegister()">Зарегистрироваться</button>
+      <button class="btn-ghost" onclick="handleResetPassword()">Забыли пароль?</button>
+      <hr style="border-color:var(--border);margin:8px 0">
+      <button class="btn-ghost" onclick="handleGoogleLogin()"><i class="fab fa-google"></i> Войти через Google</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">✦ <span id="toastText"></span></div>
+
+<script type="module">
+  import { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, updateProfile as updateAuthProfile, googleProvider, signInWithPopup, db, doc, getDoc, updateDoc, deleteDoc, collection, query, where, getDocs, orderBy, Timestamp } from './js/firebase-config.js';
+  import { showToast, showAuthModal, closeAuthModal, checkIsAdmin } from './js/main.js';
+  import { updateCartUI, updateFavUI, favorites, servicesData, addToCart } from './js/cart.js';
+
+  let currentUserData = null;
+
+  window.showAuthModal = showAuthModal;
+  window.closeAuthModal = closeAuthModal;
+
+  window.handleLogin = async () => {
+    const email = document.getElementById('authEmail').value;
+    const password = document.getElementById('authPassword').value;
+    if (!email || !password) { showToast('Заполните все поля', 'error'); return; }
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      showToast('Вход выполнен', 'success');
+      closeAuthModal();
+      setTimeout(() => window.location.reload(), 500);
+    } catch (error) {
+      let msg = 'Ошибка входа';
+      if (error.code === 'auth/invalid-credential') msg = 'Неверный email или пароль';
+      showToast(msg, 'error');
+    }
+  };
+
+  window.handleRegister = async () => {
+    const email = document.getElementById('authEmail').value;
+    const password = document.getElementById('authPassword').value;
+    if (!email || !password) { showToast('Заполните все поля', 'error'); return; }
+    if (password.length < 6) { showToast('Пароль должен быть не менее 6 символов', 'error'); return; }
+    try {
+      const userCred = await createUserWithEmailAndPassword(auth, email, password);
+      await setDoc(doc(db, 'users', userCred.user.uid), {
+        email: email,
+        displayName: email.split('@')[0],
+        role: 'user',
+        createdAt: Timestamp.now(),
+        lastLogin: Timestamp.now(),
+        isBlocked: false,
+        isDeleted: false,
+        telegram: '',
+        phone: ''
+      });
+      showToast('Регистрация успешна!', 'success');
+      closeAuthModal();
+      setTimeout(() => window.location.reload(), 500);
+    } catch (error) {
+      let msg = 'Ошибка регистрации';
+      if (error.code === 'auth/email-already-in-use') msg = 'Email уже используется';
+      showToast(msg, 'error');
+    }
+  };
+
+  window.handleGoogleLogin = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const userRef = doc(db, 'users', result.user.uid);
+      const userDoc = await getDoc(userRef);
+      if (!userDoc.exists()) {
+        await setDoc(userRef, {
+          email: result.user.email,
+          displayName: result.user.displayName || result.user.email.split('@')[0],
+          role: 'user',
+          createdAt: Timestamp.now(),
+          lastLogin: Timestamp.now(),
+          isBlocked: false,
+          isDeleted: false,
+          telegram: '',
+          phone: '',
+          avatar: result.user.photoURL || ''
+        });
+      }
+      showToast('Вход выполнен', 'success');
+      closeAuthModal();
+      setTimeout(() => window.location.reload(), 500);
+    } catch (error) {
+      showToast('Ошибка входа через Google', 'error');
+    }
+  };
+
+  window.handleResetPassword = async () => {
+    const email = document.getElementById('authEmail').value;
+    if (!email) { showToast('Введите email', 'error'); return; }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      showToast('Ссылка для сброса пароля отправлена', 'success');
+    } catch (error) {
+      showToast('Пользователь не найден', 'error');
+    }
+  };
+
+  window.resetPassword = async () => {
+    if (auth.currentUser?.email) {
+      await sendPasswordResetEmail(auth, auth.currentUser.email);
+      showToast('Ссылка для сброса пароля отправлена на email', 'success');
+    }
+  };
+
+  window.logout = async () => {
+    await auth.signOut();
+    window.location.href = '/index.html';
+  };
+
+  window.updateProfile = async () => {
+    const user = auth.currentUser;
+    if (!user) { showToast('Войдите в аккаунт', 'error'); return; }
+    
+    const displayName = document.getElementById('profileDisplayName').value;
+    const telegram = document.getElementById('profileTelegram').value;
+    const phone = document.getElementById('profilePhone').value;
+    
+    try {
+      await updateDoc(doc(db, 'users', user.uid), {
+        displayName: displayName,
+        telegram: telegram,
+        phone: phone,
+        updatedAt: Timestamp.now()
+      });
+      
+      if (displayName) {
+        await updateAuthProfile(user, { displayName: displayName });
+      }
+      
+      showToast('Профиль обновлен', 'success');
+    } catch (error) {
+      showToast('Ошибка обновления', 'error');
+    }
+  };
+
+  window.deleteAccount = async () => {
+    if (confirm('Вы уверены? Аккаунт будет удален безвозвратно. Все данные будут стерты.')) {
+      const user = auth.currentUser;
+      if (user) {
+        try {
+          await deleteDoc(doc(db, 'users', user.uid));
+          await user.delete();
+          showToast('Аккаунт удален', 'success');
+          window.location.href = '/index.html';
+        } catch (error) {
+          showToast('Ошибка удаления. Возможно, требуется повторная авторизация.', 'error');
+        }
+      }
+    }
+  };
+
+  async function loadUserOrders() {
+    const user = auth.currentUser;
+    if (!user) return;
+    
+    const q = query(collection(db, 'orders'), where('userId', '==', user.uid), orderBy('createdAt', 'desc'));
+    const snapshot = await getDocs(q);
+    const container = document.getElementById('orderHistoryList');
+    
+    if (snapshot.empty) {
+      container.innerHTML = '<div class="empty-cart">📦 У вас пока нет заказов</div>';
+      return;
+    }
+    
+    container.innerHTML = snapshot.docs.map(doc => {
+      const order = doc.data();
+      const statusText = {
+        'pending': '⏳ Ожидает',
+        'processing': '🔄 В работе',
+        'completed': '✅ Выполнен',
+        'cancelled': '❌ Отменен'
+      };
+      const statusClass = {
+        'pending': 'status-pending',
+        'processing': 'status-processing',
+        'completed': 'status-completed',
+        'cancelled': 'status-cancelled'
+      };
+      
+      return `
+        <div class="admin-order-item">
+          <div class="admin-order-header">
+            <strong>Заказ #${doc.id.slice(-8)}</strong>
+            <span class="admin-order-status ${statusClass[order.status] || 'status-pending'}">${statusText[order.status] || order.status}</span>
+          </div>
+          <div><strong>💰 Сумма:</strong> ${order.total} ₽</div>
+          <div><strong>📅 Дата:</strong> ${order.createdAt?.toDate().toLocaleDateString()}</div>
+          <div><strong>🛒 Состав:</strong> ${order.items?.map(i => `${i.name} x${i.quantity}`).join(', ')}</div>
+          ${order.promoCode ? `<div><strong>🎫 Промокод:</strong> ${order.promoCode} (скидка: ${order.discount || 0} ₽)</div>` : ''}
+        </div>
+      `;
+    }).join('');
+  }
+
+  function loadProfileFavorites() {
+    const container = document.getElementById('profileFavoritesList');
+    const favServices = servicesData.filter(s => favorites.includes(s.id));
+    
+    if (favServices.length === 0) {
+      container.innerHTML = '<div class="empty-cart">❤️ Избранное пусто</div>';
+      return;
+    }
+    
+    container.innerHTML = favServices.map(service => `
+      <div class="fav-card">
+        <div class="fav-card-info">
+          <h4>${service.name}</h4>
+          <p>${service.price} ₽</p>
+          <small style="color:var(--muted)">${service.desc.substring(0, 60)}...</small>
+        </div>
+        <div style="display:flex; gap:8px">
+          <button class="add-btn" onclick="addToCartFromProfile(${service.id})" title="В корзину">
+            <i class="fas fa-cart-plus"></i>
+          </button>
+          <button class="fav-remove" onclick="removeFromFavorites(${service.id})" title="Удалить">
+            <i class="fas fa-trash-alt"></i>
+          </button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  window.addToCartFromProfile = (id) => {
+    addToCart(id, 1);
+    showToast('Добавлено в корзину', 'success');
+  };
+
+  window.removeFromFavorites = (id) => {
+    const index = favorites.indexOf(id);
+    if (index !== -1) {
+      favorites.splice(index, 1);
+      localStorage.setItem('favorites', JSON.stringify(favorites));
+      updateFavUI();
+      loadProfileFavorites();
+      showToast('Удалено из избранного', 'warning');
+    }
+  };
+
+  async function loadProfileData() {
+    const user = auth.currentUser;
+    if (!user) return;
+    
+    const userDoc = await getDoc(doc(db, 'users', user.uid));
+    if (userDoc.exists()) {
+      currentUserData = userDoc.data();
+      document.getElementById('profileUserName').textContent = `Добро пожаловать, ${currentUserData.displayName || user.email}!`;
+      document.getElementById('profileDisplayName').value = currentUserData.displayName || '';
+      document.getElementById('profileTelegram').value = currentUserData.telegram || '';
+      document.getElementById('profilePhone').value = currentUserData.phone || '';
+      document.getElementById('profileEmail').value = user.email || '';
+    }
+  }
+
+  window.switchProfileTab = (tab) => {
+    document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    document.getElementById('profileOrdersTab').style.display = tab === 'orders' ? 'block' : 'none';
+    document.getElementById('profileFavoritesTab').style.display = tab === 'favorites' ? 'block' : 'none';
+    document.getElementById('profileSettingsTab').style.display = tab === 'settings' ? 'block' : 'none';
+    
+    if (tab === 'favorites') loadProfileFavorites();
+    if (tab === 'orders') loadUserOrders();
+  };
+
+  // Проверка авторизации и загрузка данных
+  auth.onAuthStateChanged(async (user) => {
+    updateCartUI();
+    updateFavUI();
+    
+    if (!user) {
+      window.location.href = '/index.html';
+      return;
+    }
+    
+    // Показываем ссылку на админку если нужно
+    const isAdmin = await checkIsAdmin(user);
+    const adminLink = document.querySelector('.admin-link');
+    if (adminLink && isAdmin) adminLink.style.display = 'block';
+    
+    await loadProfileData();
+    await loadUserOrders();
+    loadProfileFavorites();
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    updateCartUI();
+    updateFavUI();
+  });
+</script>
+</body>
+</html>
