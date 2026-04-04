@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Чат поддержки — Design Antviz</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;500;600;700;800;900&family=Onest:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<canvas id="starfield"></canvas>
+<div class="cursor" id="cursor"></div>
+<div class="cursor-trail" id="cursorTrail"></div>
+
+<nav id="navbar">
+  <div class="nav-logo" onclick="window.location.href='/index.html'">DESIGN ANTVIZ</div>
+  <div class="nav-links">
+    <a href="/index.html">Главная</a>
+    <a href="/services.html">Услуги</a>
+    <a href="/contact.html">Контакты</a>
+    <a href="/chat.html">Чат поддержки</a>
+    <a href="/admin.html" class="admin-link" style="display:none">Админ-панель</a>
+    <div class="fav-icon" onclick="window.location.href='/favorites.html'">
+      <i class="fas fa-heart"></i>
+      <div class="cart-count" id="favCountBadge">0</div>
+    </div>
+    <div class="cart-icon" onclick="window.location.href='/order.html'">
+      <i class="fas fa-shopping-bag"></i>
+      <div class="cart-count" id="cartCountBadge">0</div>
+    </div>
+    <div id="authContainer" class="auth-buttons">
+      <button class="auth-btn" onclick="showAuthModal()">Войти / Регистрация</button>
+    </div>
+  </div>
+</nav>
+
+<div class="page active">
+  <div class="page-inner" style="max-width:1000px">
+    <h1>Чат поддержки</h1>
+    <p class="page-sub">Задайте любой вопрос, мы ответим в течение 5 минут</p>
+    
+    <!-- Блок для неавторизованных -->
+    <div id="chatAuthRequired" style="display:none; text-align:center; padding:60px">
+      <i class="fas fa-lock" style="font-size:3rem; color:var(--muted); margin-bottom:20px; display:block"></i>
+      <p>Чат доступен только авторизованным пользователям</p>
+      <button class="btn-primary" onclick="showAuthModal()" style="margin-top:20px">Войти / Регистрация</button>
+    </div>
+    
+    <!-- Блок чата для авторизованных -->
+    <div id="chatContainer" style="display:none">
+      <!-- Кнопки быстрых действий -->
+      <div class="quick-buttons" id="quickButtons"></div>
+      
+      <!-- Область сообщений -->
+      <div class="chat-messages-area" id="chatMessagesArea">
+        <div class="chat-message support">
+          👋 Здравствуйте! Я поддержка Design Antviz. Чем могу помочь?
+          <span class="chat-message-time">Только что</span>
+        </div>
+      </div>
+      
+      <!-- Поле ввода -->
+      <div class="chat-input-row">
+        <input type="text" id="chatMessageInput" placeholder="Введите сообщение...">
+        <label class="file-attach-btn" for="chatFileInput">
+          <i class="fas fa-paperclip"></i>
+        </label>
+        <input type="file" id="chatFileInput" style="display:none" accept="image/*,.pdf,.doc,.txt">
+        <button onclick="sendChatMessage()">Отправить</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- МОДАЛ ПРИЧИНЫ ОБРАЩЕНИЯ -->
+<div class="modal-ov" id="reasonModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeReasonModal()"><i class="fas fa-times"></i></button>
+    <div class="modal-title">Уточните причину обращения</div>
+    <textarea id="reasonDetails" class="form-input" rows="3" placeholder="Опишите ваш вопрос подробнее..."></textarea>
+    <button class="btn-primary" style="margin-top:16px; width:100%" onclick="submitReason()">Отправить</button>
+  </div>
+</div>
+
+<!-- МОДАЛ АВТОРИЗАЦИИ -->
+<div class="modal-ov" id="authModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeAuthModal()"><i class="fas fa-times"></i></button>
+    <div class="modal-title">Вход / Регистрация</div>
+    <div style="display:flex;flex-direction:column;gap:16px;margin-top:24px">
+      <input type="email" id="authEmail" class="form-input" placeholder="Email">
+      <input type="password" id="authPassword" class="form-input" placeholder="Пароль">
+      <button class="btn-primary" onclick="handleLogin()">Войти</button>
+      <button class="btn-ghost" onclick="handleRegister()">Зарегистрироваться</button>
+      <button class="btn-ghost" onclick="handleResetPassword()">Забыли пароль?</button>
+      <hr style="border-color:var(--border);margin:8px 0">
+      <button class="btn-ghost" onclick="handleGoogleLogin()"><i class="fab fa-google"></i> Войти через Google</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">✦ <span id="toastText"></span></div>
+
+<script type="module">
+  import { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, googleProvider, signInWithPopup, doc, setDoc, getDoc, Timestamp, collection, addDoc, getDocs, query, where, orderBy, onSnapshot, updateDoc } from './js/firebase-config.js';
+  import { showToast, showAuthModal, closeAuthModal, checkIsAdmin } from './js/main.js';
+  import { updateCartUI, updateFavUI } from './js/cart.js';
+
+  let currentChatId = null;
+  let messagesUnsubscribe = null;
+  let pendingReasonAction = null;
+
+  window.showAuthModal = showAuthModal;
+  window.closeAuthModal = closeAuthModal;
+
+  window.handleLogin = async () => {
+    const email = document.getElementById('authEmail').value;
+    const password = document.getElementById('authPassword').value;
+    if (!email || !password) { showToast('Заполните все поля', 'error'); return; }
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      showToast('Вход выполнен', 'success');
+      closeAuthModal();
+      setTimeout(() => window.location.reload(), 500);
+    } catch (error) {
+      let msg = 'Ошибка входа';
+      if (error.code === 'auth/invalid-credential') msg = 'Неверный email или пароль';
+      showToast(msg, 'error');
+    }
+  };
+
+  window.handleRegister = async () => {
+    const email = document.getElementById('authEmail').value;
+    const password = document.getElementById('authPassword').value;
+    if (!email || !password) { showToast('Заполните все поля', 'error'); return; }
+    if (password.length < 6) { showToast('Пароль должен быть не менее 6 символов', 'error'); return; }
+    try {
+      const userCred = await createUserWithEmailAndPassword(auth, email, password);
+      await setDoc(doc(db, 'users', userCred.user.uid), {
+        email: email,
+        displayName: email.split('@')[0],
+        role: 'user',
+        createdAt: Timestamp.now(),
+        lastLogin: Timestamp.now(),
+        isBlocked: false,
+        isDeleted: false,
+        telegram: '',
+        phone: ''
+      });
+      showToast('Регистрация успешна!', 'success');
+      closeAuthModal();
+      setTimeout(() => window.location.reload(), 500);
+    } catch (error) {
+      let msg = 'Ошибка регистрации';
+      if (error.code === 'auth/email-already-in-use') msg = 'Email уже используется';
+      showToast(msg, 'error');
+    }
+  };
+
+  window.handleGoogleLogin = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const userRef = doc(db, 'users', result.user.uid);
+      const userDoc = await getDoc(userRef);
+      if (!userDoc.exists()) {
+        await setDoc(userRef, {
+          email: result.user.email,
+          displayName: result.user.displayName || result.user.email.split('@')[0],
+          role: 'user',
+          createdAt: Timestamp.now(),
+          lastLogin: Timestamp.now(),
+          isBlocked: false,
+          isDeleted: false,
+          telegram: '',
+          phone: '',
+          avatar: result.user.photoURL || ''
+        });
+      }
+      showToast('Вход выполнен', 'success');
+      closeAuthModal();
+      setTimeout(() => window.location.reload(), 500);
+    } catch (error) {
+      showToast('Ошибка входа через Google', 'error');
+    }
+  };
+
+  window.handleResetPassword = async () => {
+    const email = document.getElementById('authEmail').value;
+    if (!email) { showToast('Введите email', 'error'); return; }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      showToast('Ссылка для сброса пароля отправлена', 'success');
+    } catch (error) {
+      showToast('Пользователь не найден', 'error');
+    }
+  };
+
+  // Создание или получение чата
+  async function getOrCreateChat() {
+    const user = auth.currentUser;
+    if (!user) return null;
+    
+    const q = query(collection(db, 'chats'), where('userId', '==', user.uid), where('status', '==', 'open'));
+    const snapshot = await getDocs(q);
+    
+    if (!snapshot.empty) {
+      return snapshot.docs[0].id;
+    }
+    
+    const chatRef = await addDoc(collection(db, 'chats'), {
+      userId: user.uid,
+      userEmail: user.email,
+      userDisplayName: user.displayName || user.email.split('@')[0],
+      topic: 'general',
+      status: 'open',
+      createdAt: Timestamp.now(),
+      lastMessage: '',
+      lastMessageTime: Timestamp.now(),
+      lastSenderId: null,
+      operatorId: null,
+      operatorName: null,
+      unreadCount: 0
+    });
+    
+    return chatRef.id;
+  }
+
+  // Отправка сообщения
+  async function sendMessage(message, fileUrl = null) {
+    const user = auth.currentUser;
+    if (!user) {
+      showToast('Войдите в аккаунт', 'error');
+      return false;
+    }
+    
+    if (!message.trim() && !fileUrl) {
+      showToast('Введите сообщение', 'error');
+      return false;
+    }
+    
+    if (!currentChatId) {
+      currentChatId = await getOrCreateChat();
+    }
+    
+    try {
+      await addDoc(collection(db, 'chats', currentChatId, 'messages'), {
+        text: message.trim() || (fileUrl ? '📎 Отправил(а) файл' : ''),
+        senderId: user.uid,
+        senderName: user.displayName || user.email,
+        senderEmail: user.email,
+        timestamp: Timestamp.now(),
+        read: false,
+        fileUrl: fileUrl || null
+      });
+      
+      await updateDoc(doc(db, 'chats', currentChatId), {
+        lastMessage: message.trim() || '📎 Файл',
+        lastMessageTime: Timestamp.now(),
+        lastSenderId: user.uid
+      });
+      
+      return true;
+    } catch (error) {
+      showToast('Ошибка отправки', 'error');
+      return false;
+    }
+  }
+
+  // Загрузка файла
+  async function uploadFile(file) {
+    showToast('Загрузка файла...', 'warning');
+    try {
+      // Имитация загрузки (в реальном проекте используй Firebase Storage)
+      // Пока просто возвращаем ссылку-заглушку
+      const fakeUrl = URL.createObjectURL(file);
+      showToast('Файл загружен', 'success');
+      return fakeUrl;
+    } catch (error) {
+      showToast('Ошибка загрузки', 'error');
+      return null;
+    }
+  }
+
+  // Загрузка сообщений в реальном времени
+  function loadMessages() {
+    if (messagesUnsubscribe) messagesUnsubscribe();
+    if (!currentChatId) return;
+    
+    const q = query(collection(db, 'chats', currentChatId, 'messages'), orderBy('timestamp', 'asc'));
+    messagesUnsubscribe = onSnapshot(q, (snapshot) => {
+      const container = document.getElementById('chatMessagesArea');
+      if (!container) return;
+      
+      container.innerHTML = '';
+      
+      snapshot.forEach(doc => {
+        const msg = doc.data();
+        const isUser = msg.senderId === auth.currentUser?.uid;
+        const date = msg.timestamp?.toDate();
+        
+        const timeStr = date ? date.toLocaleTimeString('ru-RU', {
+          hour: '2-digit',
+          minute: '2-digit'
+        }) : '';
+        
+        const dateStr = date ? date.toLocaleDateString('ru-RU', {
+          day: '2-digit',
+          month: '2-digit'
+        }) : '';
+        
+        let fileHtml = '';
+        if (msg.fileUrl) {
+          const isImage = msg.fileUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i);
+          if (isImage) {
+            fileHtml = `<a href="${msg.fileUrl}" target="_blank" style="display:block;margin-bottom:8px">
+              <img src="${msg.fileUrl}" style="max-width:150px; max-height:100px; border-radius:8px" alt="Вложение">
+            </a>`;
+          } else {
+            fileHtml = `<a href="${msg.fileUrl}" target="_blank" style="display:block;margin-bottom:8px">📎 Скачать файл</a>`;
+          }
+        }
+        
+        container.innerHTML += `
+          <div class="chat-message ${isUser ? 'user' : 'support'}">
+            ${fileHtml}
+            ${msg.text}
+            <span class="chat-message-time">${dateStr} ${timeStr}</span>
+          </div>
+        `;
+      });
+      
+      container.scrollTop = container.scrollHeight;
+    });
+  }
+
+  // Отправка сообщения с причиной
+  async function sendReasonMessage(reason, details) {
+    const reasonMessages = {
+      'order': '📦 Вопрос по заказу',
+      'payment': '💰 Вопрос по оплате',
+      'services': '🎨 Вопрос по услугам',
+      'operator': '👨‍💼 Связаться с оператором'
+    };
+    
+    const message = `${reasonMessages[reason] || reason}\n📝 Детали: ${details || 'Не указаны'}`;
+    return await sendMessage(message);
+  }
+
+  // Кнопки быстрых действий
+  const quickActions = [
+    { text: "📦 Вопрос по заказу", value: "order" },
+    { text: "💰 Оплата", value: "payment" },
+    { text: "🎨 Услуги и цены", value: "services" },
+    { text: "👨‍💼 Связаться с оператором", value: "operator" }
+  ];
+
+  function renderQuickButtons() {
+    const container = document.getElementById('quickButtons');
+    if (!container) return;
+    
+    container.innerHTML = quickActions.map(action => `
+      <button class="quick-btn" data-value="${action.value}">
+        ${action.text}
+      </button>
+    `).join('');
+    
+    container.querySelectorAll('.quick-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        pendingReasonAction = btn.dataset.value;
+        document.getElementById('reasonModal').classList.add('open');
+      });
+    });
+  }
+
+  window.closeReasonModal = () => {
+    document.getElementById('reasonModal').classList.remove('open');
+    document.getElementById('reasonDetails').value = '';
+  };
+
+  window.submitReason = async () => {
+    const details = document.getElementById('reasonDetails').value.trim();
+    await sendReasonMessage(pendingReasonAction, details);
+    closeReasonModal();
+    pendingReasonAction = null;
+  };
+
+  window.sendChatMessage = async () => {
+    const input = document.getElementById('chatMessageInput');
+    const msg = input?.value.trim();
+    if (!msg) return;
+    
+    input.value = '';
+    await sendMessage(msg);
+  };
+
+  // Обработка загрузки файла
+  document.getElementById('chatFileInput')?.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const url = await uploadFile(file);
+    if (url) {
+      await sendMessage('', url);
+    }
+    e.target.value = '';
+  });
+
+  // Инициализация чата при авторизации
+  auth.onAuthStateChanged(async (user) => {
+    updateCartUI();
+    updateFavUI();
+    
+    const authRequiredDiv = document.getElementById('chatAuthRequired');
+    const chatContainer = document.getElementById('chatContainer');
+    
+    // Показываем ссылку на админку если нужно
+    const isAdmin = await checkIsAdmin(user);
+    const adminLink = document.querySelector('.admin-link');
+    if (adminLink && isAdmin) adminLink.style.display = 'block';
+    
+    if (!user) {
+      authRequiredDiv.style.display = 'block';
+      chatContainer.style.display = 'none';
+    } else {
+      authRequiredDiv.style.display = 'none';
+      chatContainer.style.display = 'block';
+      
+      currentChatId = await getOrCreateChat();
+      loadMessages();
+      renderQuickButtons();
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    updateCartUI();
+    updateFavUI();
+  });
+</script>
+</body>
+</html>
