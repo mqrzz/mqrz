@@ -76,6 +76,7 @@
       <div>
         <div style="background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:36px">
           <div style="margin-bottom:24px; font-family:'Unbounded',sans-serif; font-size:1rem; font-weight:700">Быстрый вопрос</div>
+          
           <div class="form-group" style="margin-bottom:16px">
             <label>Ваше имя</label>
             <input class="form-input" id="cName" placeholder="Имя">
@@ -88,6 +89,26 @@
             <label>Вопрос</label>
             <textarea class="form-input" id="cMsg" placeholder="Напишите вопрос..." style="min-height:80px"></textarea>
           </div>
+          
+          <!-- ПОДСКАЗКА: ЧТО ЛУЧШЕ НАПИСАТЬ -->
+          <div style="background:var(--surface2); border-radius:12px; padding:16px; margin-bottom:20px">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px">
+              <i class="fas fa-lightbulb" style="color:var(--gold)"></i>
+              <span style="font-weight:600; font-size:.85rem">Что лучше написать, чтобы быстрее получить ответ?</span>
+            </div>
+            <ul style="margin-left:20px; color:var(--muted); font-size:.8rem; line-height:1.8">
+              <li>📦 <strong>Вопрос по заказу</strong> — укажите номер заказа (если есть)</li>
+              <li>🎨 <strong>Услуги и цены</strong> — перечислите какие услуги интересуют</li>
+              <li>💰 <strong>Оплата</strong> — способ оплаты, есть ли вопросы по счёту</li>
+              <li>✏️ <strong>Правки и доработки</strong> — опишите что нужно изменить</li>
+              <li>🚀 <strong>Срочный заказ</strong> — укажите дедлайн</li>
+              <li>🤝 <strong>Сотрудничество</strong> — кратко опишите предложение</li>
+            </ul>
+            <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border); font-size:.75rem; color:var(--gold)">
+              💡 Чем подробнее опишете вопрос, тем быстрее мы сможем помочь!
+            </div>
+          </div>
+          
           <button class="btn-primary" style="width:100%; border-radius:12px" onclick="sendQuestion()">Отправить →</button>
         </div>
       </div>
@@ -120,8 +141,9 @@
 
 <script type="module">
   import { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, googleProvider, signInWithPopup, doc, setDoc, getDoc, Timestamp } from './js/firebase-config.js';
-  import { showToast, showAuthModal, closeAuthModal, checkIsAdmin } from './js/main.js';
+  import { showToast, showAuthModal, closeAuthModal } from './js/main.js';
   import { updateCartUI, updateFavUI } from './js/cart.js';
+  import { checkIsAdmin } from './js/auth.js';
 
   window.showAuthModal = showAuthModal;
   window.closeAuthModal = closeAuthModal;
@@ -208,7 +230,6 @@
     }
   };
 
-  // Отправка сообщения через Telegram бота
   window.sendQuestion = async () => {
     const name = document.getElementById('cName')?.value.trim();
     const tg = document.getElementById('cTg')?.value.trim();
@@ -219,17 +240,27 @@
       return;
     }
     
-    // Здесь будет отправка через Cloudflare Worker в Telegram
-    // Пока просто показываем уведомление
-    showToast('Сообщение отправлено! Мы свяжемся с вами', 'success');
+    // Отправляем в Telegram через Cloudflare Worker
+    const token = 'YOUR_BOT_TOKEN';
+    const chatId = 'YOUR_CHAT_ID';
+    const text = `📬 НОВОЕ СООБЩЕНИЕ С САЙТА\n\n👤 Имя: ${name}\n📱 Telegram: ${tg}\n💬 Вопрос: ${msg}`;
     
-    // Очищаем форму
-    document.getElementById('cName').value = '';
-    document.getElementById('cTg').value = '';
-    document.getElementById('cMsg').value = '';
+    try {
+      await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: chatId, text: text })
+      });
+      showToast('Сообщение отправлено! Мы свяжемся с вами', 'success');
+      
+      document.getElementById('cName').value = '';
+      document.getElementById('cTg').value = '';
+      document.getElementById('cMsg').value = '';
+    } catch (error) {
+      showToast('Ошибка отправки', 'error');
+    }
   };
 
-  // Проверка авторизации для показа админ-ссылки
   auth.onAuthStateChanged(async (user) => {
     updateCartUI();
     updateFavUI();
