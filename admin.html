@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Админ-панель — Design Antviz</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;500;600;700;800;900&family=Onest:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<canvas id="starfield"></canvas>
+<div class="cursor" id="cursor"></div>
+<div class="cursor-trail" id="cursorTrail"></div>
+
+<nav id="navbar">
+  <div class="nav-logo" onclick="window.location.href='/index.html'">DESIGN ANTVIZ</div>
+  <div class="nav-links">
+    <a href="/index.html">Главная</a>
+    <a href="/services.html">Услуги</a>
+    <a href="/contact.html">Контакты</a>
+    <a href="/chat.html">Чат поддержки</a>
+    <a href="/admin.html" class="admin-link" style="display:none">Админ-панель</a>
+    <div class="fav-icon" onclick="window.location.href='/favorites.html'">
+      <i class="fas fa-heart"></i>
+      <div class="cart-count" id="favCountBadge">0</div>
+    </div>
+    <div class="cart-icon" onclick="window.location.href='/order.html'">
+      <i class="fas fa-shopping-bag"></i>
+      <div class="cart-count" id="cartCountBadge">0</div>
+    </div>
+    <div id="authContainer" class="auth-buttons">
+      <button class="auth-btn" onclick="showAuthModal()">Войти / Регистрация</button>
+    </div>
+  </div>
+</nav>
+
+<div class="page active">
+  <div class="page-inner" style="max-width:1200px">
+    <h1>Панель администратора</h1>
+    <p class="page-sub" id="adminStatus">Проверка прав доступа...</p>
+    
+    <div class="admin-panel">
+      <div class="admin-tabs">
+        <div class="admin-tab active" onclick="switchAdminTab('orders')">📦 Заказы</div>
+        <div class="admin-tab" onclick="switchAdminTab('users')">👥 Пользователи</div>
+        <div class="admin-tab" onclick="switchAdminTab('chats')">💬 Чаты поддержки</div>
+        <div class="admin-tab" onclick="switchAdminTab('promos')">🎫 Промокоды</div>
+        <div class="admin-tab" onclick="switchAdminTab('stats')">📊 Статистика</div>
+      </div>
+      
+      <div id="adminOrdersList" class="admin-orders-list"></div>
+      <div id="adminUsersList" style="display:none" class="user-list"></div>
+      <div id="adminChatsList" style="display:none" class="admin-orders-list"></div>
+      <div id="adminPromoCodes" style="display:none"></div>
+      <div id="adminStats" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+<!-- МОДАЛ ОТВЕТА В ЧАТ -->
+<div class="modal-ov" id="replyChatModal">
+  <div class="modal-box" style="max-width:600px">
+    <button class="modal-close" onclick="closeReplyChatModal()"><i class="fas fa-times"></i></button>
+    <div class="modal-title">Ответ пользователю</div>
+    <div id="chatMessagesPreview" style="max-height:300px; overflow-y:auto; background:var(--surface2); border-radius:12px; padding:16px; margin-bottom:16px"></div>
+    <textarea id="replyMessageText" class="form-input" rows="3" placeholder="Введите ответ..."></textarea>
+    <button class="btn-primary" style="margin-top:16px; width:100%" onclick="sendAdminReply()">Отправить ответ</button>
+  </div>
+</div>
+
+<!-- МОДАЛ СОЗДАНИЯ ПРОМОКОДА -->
+<div class="modal-ov" id="createPromoModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeCreatePromoModal()"><i class="fas fa-times"></i></button>
+    <div class="modal-title">Создать промокод</div>
+    <div style="display:flex; flex-direction:column; gap:16px; margin-top:24px">
+      <input type="text" id="promoCode" class="form-input" placeholder="Код (например: SUMMER2026)">
+      <select id="promoType" class="form-input">
+        <option value="percentage">Процент (%)</option>
+        <option value="fixed">Фиксированная сумма (₽)</option>
+      </select>
+      <input type="number" id="promoValue" class="form-input" placeholder="Значение скидки">
+      <input type="date" id="promoExpires" class="form-input">
+      <button class="btn-primary" onclick="createPromoCode()">Создать</button>
+    </div>
+  </div>
+</div>
+
+<!-- МОДАЛ АВТОРИЗАЦИИ -->
+<div class="modal-ov" id="authModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeAuthModal()"><i class="fas fa-times"></i></button>
+    <div class="modal-title">Вход / Регистрация</div>
+    <div style="display:flex;flex-direction:column;gap:16px;margin-top:24px">
+      <input type="email" id="authEmail" class="form-input" placeholder="Email">
+      <input type="password" id="authPassword" class="form-input" placeholder="Пароль">
+      <button class="btn-primary" onclick="handleLogin()">Войти</button>
+      <button class="btn-ghost" onclick="handleRegister()">Зарегистрироваться</button>
+      <button class="btn-ghost" onclick="handleResetPassword()">Забыли пароль?</button>
+      <hr style="border-color:var(--border);margin:8px 0">
+      <button class="btn-ghost" onclick="handleGoogleLogin()"><i class="fab fa-google"></i> Войти через Google</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">✦ <span id="toastText"></span></div>
+
+<script type="module">
+  import { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, googleProvider, signInWithPopup, doc, setDoc, getDoc, Timestamp, collection, getDocs, query, where, orderBy, updateDoc, deleteDoc, addDoc } from './js/firebase-config.js';
+  import { showToast, showAuthModal, closeAuthModal, checkIsAdmin } from './js/main.js';
+  import { updateCartUI, updateFavUI, updateOrderStatus, getAllOrders } from './js/cart.js';
+  import { getAllChats, adminReplyToChat, closeChat } from './js/chat.js';
+
+  window.showAuthModal = showAuthModal;
+  window.closeAuthModal = closeAuthModal;
+
+  window.handleLogin = async () => {
+    const email = document.getElementById('authEmail').value;
+    const password = document.getElementById('authPassword').value;
+    if (!email || !password) { showToast('Заполните все поля', 'error'); return; }
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      showToast('Вход выполнен', 'success');
+      closeAuthModal();
+      setTimeout(() => window.location.reload(), 500);
+    } catch (error) {
+      let msg = 'Ошибка входа';
+      if (error.code === 'auth/invalid-credential') msg = 'Неверный email или пароль';
+      showToast(msg, 'error');
+    }
+  };
+
+  window.handleRegister = async () => {
+    const email = document.getElementById('authEmail').value;
+    const password = document.getElementById('authPassword').value;
+    if (!email || !password) { showToast('Заполните все поля', 'error'); return; }
+    if (password.length < 6) { showToast('Пароль должен быть не менее 6 символов', 'error'); return; }
+    try {
+      const userCred = await createUserWithEmailAndPassword(auth, email, password);
+      await setDoc(doc(db, 'users', userCred.user.uid), {
+        email: email,
+        displayName: email.split('@')[0],
+        role: 'user',
+        createdAt: Timestamp.now(),
+        lastLogin: Timestamp.now(),
+        isBlocked: false,
+        isDeleted: false,
+        telegram: '',
+        phone: ''
+      });
+      showToast('Регистрация успешна!', 'success');
+      closeAuthModal();
+      setTimeout(() => window.location.reload(), 500);
+    } catch (error) {
+      let msg = 'Ошибка регистрации';
+      if (error.code === 'auth/email-already-in-use') msg = 'Email уже используется';
+      showToast(msg, 'error');
+    }
+  };
+
+  window.handleGoogleLogin = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const userRef = doc(db, 'users', result.user.uid);
+      const userDoc = await getDoc(userRef);
+      if (!userDoc.exists()) {
+        await setDoc(userRef, {
+          email: result.user.email,
+          displayName: result.user.displayName || result.user.email.split('@')[0],
+          role: 'user',
+          createdAt: Timestamp.now(),
+          lastLogin: Timestamp.now(),
+          isBlocked: false,
+          isDeleted: false,
+          telegram: '',
+          phone: '',
+          avatar: result.user.photoURL || ''
+        });
+      }
+      showToast('Вход выполнен', 'success');
+      closeAuthModal();
+      setTimeout(() => window.location.reload(), 500);
+    } catch (error) {
+      showToast('Ошибка входа через Google', 'error');
+    }
+  };
+
+  window.handleResetPassword = async () => {
+    const email = document.getElementById('authEmail').value;
+    if (!email) { showToast('Введите email', 'error'); return; }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      showToast('Ссылка для сброса пароля отправлена', 'success');
+    } catch (error) {
+      showToast('Пользователь не найден', 'error');
+    }
+  };
+
+  // Загрузка заказов
+  async function loadAllOrders() {
+    const container = document.getElementById('adminOrdersList');
+    const orders = await getAllOrders();
+    
+    if (orders.length === 0) {
+      container.innerHTML = '<div class="empty-cart">📦 Заказов пока нет</div>';
+      return;
+    }
+    
+    container.innerHTML = orders.map(order => {
+      const statusText = {
+        'pending': '⏳ Ожидает',
+        'processing': '🔄 В работе',
+        'completed': '✅ Выполнен',
+        'cancelled': '❌ Отменен'
+      };
+      const statusClass = {
+        'pending': 'status-pending',
+        'processing': 'status-processing',
+        'completed': 'status-completed',
+        'cancelled': 'status-cancelled'
+      };
+      
+      return `
+        <div class="admin-order-item">
+          <div class="admin-order-header">
+            <strong>📋 Заказ #${order.id.slice(-8)}</strong>
+            <select class="order-status-select" data-order-id="${order.id}">
+              <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>🟡 Ожидает</option>
+              <option value="processing" ${order.status === 'processing' ? 'selected' : ''}>🔵 В работе</option>
+              <option value="completed" ${order.status === 'completed' ? 'selected' : ''}>🟢 Выполнен</option>
+              <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>🔴 Отменен</option>
+            </select>
+          </div>
+          <div><strong>👤 Клиент:</strong> ${order.clientName || order.userEmail}</div>
+          <div><strong>📱 Telegram:</strong> ${order.telegram || '-'}</div>
+          <div><strong>📧 Email:</strong> ${order.userEmail || order.email || '-'}</div>
+          <div><strong>💰 Сумма:</strong> ${order.total} ₽</div>
+          <div><strong>📅 Дата:</strong> ${order.createdAt?.toDate().toLocaleString() || 'неизвестно'}</div>
+          <div><strong>🛒 Состав:</strong> ${order.items?.map(i => `${i.name} x${i.quantity}`).join(', ') || '-'}</div>
+          <div><strong>💬 Комментарий:</strong> ${order.comment || '-'}</div>
+          ${order.promoCode ? `<div><strong>🎫 Промокод:</strong> ${order.promoCode} (скидка: ${order.discount || 0} ₽)</div>` : ''}
+        </div>
+      `;
+    }).join('');
+    
+    document.querySelectorAll('.order-status-select').forEach(select => {
+      select.addEventListener('change', async (e) => {
+        const orderId = select.dataset.orderId;
+        const newStatus = e.target.value;
+        await updateOrderStatus(orderId, newStatus);
+        showToast(`Статус заказа изменен на ${newStatus}`, 'success');
+        await loadAllOrders();
+      });
+    });
+  }
+
+  // Загрузка пользователей
+  async function loadAllUsers() {
+    const container = document.getElementById('adminUsersList');
+    const snapshot = await getDocs(collection(db, 'users'));
+    
+    if (snapshot.empty) {
+      container.innerHTML = '<div class="empty-cart">👥 Пользователей пока нет</div>';
+      return;
+    }
+    
+    container.innerHTML = `
+      <div class="user-list">
+        ${snapshot.docs.map(doc => {
+          const user = doc.data();
+          const isBlocked = user.isBlocked || false;
+          const isDeleted = user.isDeleted || false;
+          
+          return `
+            <div class="user-item">
+              <div>
+                <div class="user-email">${user.email}</div>
+                <div class="user-role">${user.role === 'admin' ? '👑 Администратор' : '👤 Пользователь'}</div>
+                <div>📅 Регистрация: ${user.createdAt?.toDate().toLocaleDateString() || 'неизвестно'}</div>
+                <div>📱 Telegram: ${user.telegram || '-'}</div>
+                <div>📞 Телефон: ${user.phone || '-'}</div>
+                ${isDeleted ? '<div style="color:var(--error)">⚠️ Аккаунт удален</div>' : ''}
+              </div>
+              <div style="display:flex; gap:8px; flex-wrap:wrap">
+                <select class="user-role-select" data-user-id="${doc.id}">
+                  <option value="user" ${user.role === 'user' ? 'selected' : ''}>Пользователь</option>
+                  <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Администратор</option>
+                </select>
+                ${!isDeleted ? `
+                  <button class="${isBlocked ? 'unblock-btn' : 'block-btn'}" onclick="toggleBlockUser('${doc.id}', ${isBlocked})">
+                    ${isBlocked ? '🔓 Разблокировать' : '🔒 Заблокировать'}
+                  </button>
+                ` : ''}
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+    
+    document.querySelectorAll('.user-role-select').forEach(select => {
+      select.addEventListener('change', async (e) => {
+        const userId = select.dataset.userId;
+        const newRole = e.target.value;
+        await updateDoc(doc(db, 'users', userId), { role: newRole });
+        showToast(`Роль изменена на ${newRole}`, 'success');
+        await loadAllUsers();
+      });
+    });
+  }
+
+  window.toggleBlockUser = async (userId, isBlocked) => {
+    await updateDoc(doc(db, 'users', userId), { isBlocked: !isBlocked });
+    showToast(!isBlocked ? 'Пользователь заблокирован' : 'Пользователь разблокирован', 'success');
+    await loadAllUsers();
+  };
+
+  // Загрузка чатов
+  async function loadAllChats() {
+    const container = document.getElementById('adminChatsList');
+    const chats = await getAllChats();
+    
+    if (chats.length === 0) {
+      container.innerHTML = '<div class="empty-cart">💬 Чатов пока нет</div>';
+      return;
+    }
+    
+    container.innerHTML = chats.map(chat => {
+      const statusText = chat.status === 'open' ? '🟢 Открыт' : '🔴 Закрыт';
+      const statusClass = chat.status === 'open' ? 'status-pending' : 'status-cancelled';
+      
+      return `
+        <div class="admin-order-item">
+          <div class="admin-order-header">
+            <strong>💬 Чат с: ${chat.userEmail}</strong>
+            <span class="admin-order-status ${statusClass}">${statusText}</span>
+          </div>
+          <div><strong>📋 Тема:</strong> ${chat.topic || 'general'}</div>
+          <div><strong>📝 Последнее сообщение:</strong> ${chat.lastMessage?.substring(0, 50) || '-'}</div>
+          <div><strong>🕐 Время:</strong> ${chat.lastMessageTime?.toDate().toLocaleString() || '-'}</div>
+          <div style="display:flex; gap:12px; margin-top:12px">
+            <button class="btn-primary" style="padding:8px 16px" onclick="openReplyChat('${chat.id}')">✏️ Ответить</button>
+            ${chat.status === 'open' ? `<button class="btn-ghost" style="padding:8px 16px" onclick="closeChatAdmin('${chat.id}')">🔒 Закрыть чат</button>` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  window.openReplyChat = async (chatId) => {
+    currentReplyChatId = chatId;
+    const modal = document.getElementById('replyChatModal');
+    
+    const messagesContainer = document.getElementById('chatMessagesPreview');
+    const q = query(collection(db, 'chats', chatId, 'messages'), orderBy('timestamp', 'asc'));
+    const snapshot = await getDocs(q);
+    
+    messagesContainer.innerHTML = '';
+    snapshot.forEach(doc => {
+      const msg = doc.data();
+      const isUser = msg.senderId !== auth.currentUser?.uid;
+      const time = msg.timestamp?.toDate().toLocaleString();
+      
+      messagesContainer.innerHTML += `
+        <div style="margin-bottom:12px; padding:8px; background:${isUser ? 'var(--gold-dim)' : 'var(--surface)'}; border-radius:8px">
+          <strong>${isUser ? '👤 Пользователь' : '👨‍💼 Админ'}:</strong> ${msg.text}
+          ${msg.fileUrl ? `<div><a href="${msg.fileUrl}" target="_blank">📎 Вложение</a></div>` : ''}
+          <br><small style="color:var(--muted)">${time}</small>
+        </div>
+      `;
+    });
+    
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    modal.classList.add('open');
+  };
+
+  window.closeReplyChatModal = () => {
+    document.getElementById('replyChatModal').classList.remove('open');
+    document.getElementById('replyMessageText').value = '';
+  };
+
+  window.sendAdminReply = async () => {
+    const message = document.getElementById('replyMessageText')?.value.trim();
+    if (!message) { showToast('Введите сообщение', 'error'); return; }
+    
+    const success = await adminReplyToChat(currentReplyChatId, message);
+    if (success) {
+      showToast('Ответ отправлен', 'success');
+      closeReplyChatModal();
+      await loadAllChats();
+    } else {
+      showToast('Ошибка отправки', 'error');
+    }
+  };
+
+  window.closeChatAdmin = async (chatId) => {
+    if (confirm('Закрыть чат?')) {
+      await closeChat(chatId);
+      await loadAllChats();
+    }
+  };
+
+  // Загрузка промокодов
+  async function loadPromoCodes() {
+    const container = document.getElementById('adminPromoCodes');
+    const snapshot = await getDocs(collection(db, 'promocodes'));
+    
+    container.innerHTML = `
+      <div style="margin-bottom:20px">
+        <button class="btn-primary" onclick="document.getElementById('createPromoModal').classList.add('open')">+ Создать промокод</button>
+      </div>
+      ${snapshot.empty ? '<div class="empty-cart">🎫 Промокодов пока нет</div>' : ''}
+      ${snapshot.docs.map(doc => {
+        const promo = doc.data();
+        const expiresText = promo.expiresAt?.toDate().toLocaleDateString() || 'бессрочно';
+        return `
+          <div class="promo-item">
+            <div>
+              <strong>${promo.code}</strong><br>
+              <small>${promo.type === 'percentage' ? promo.value + '%' : promo.value + ' ₽'}</small><br>
+              <small>📅 Действует до: ${expiresText}</small>
+            </div>
+            <button class="btn-danger" onclick="deletePromo('${doc.id}')">🗑 Удалить</button>
+          </div>
+        `;
+      }).join('')}
+    `;
+  }
+
+  window.deletePromo = async (promoId) => {
+    if (confirm('Удалить промокод?')) {
+      await deleteDoc(doc(db, 'promocodes', promoId));
+      showToast('Промокод удален', 'success');
+      await loadPromoCodes();
+    }
+  };
+
+  window.closeCreatePromoModal = () => {
+    document.getElementById('createPromoModal').classList.remove('open');
+  };
+
+  window.createPromoCode = async () => {
+    const code = document.getElementById('promoCode')?.value.toUpperCase();
+    const type = document.getElementById('promoType')?.value;
+    const value = parseInt(document.getElementById('promoValue')?.value);
+    const expiresAt = document.getElementById('promoExpires')?.value;
+    
+    if (!code || !value) { showToast('Заполните код и значение скидки', 'error'); return; }
+    
+    await addDoc(collection(db, 'promocodes'), {
+      code, type, value, isActive: true,
+      expiresAt: expiresAt ? Timestamp.fromDate(new Date(expiresAt)) : null,
+      createdAt: Timestamp.now()
+    });
+    
+    showToast('Промокод создан', 'success');
+    closeCreatePromoModal();
+    await loadPromoCodes();
+  };
+
+  // Загрузка статистики
+  async function loadStats() {
+    const container = document.getElementById('adminStats');
+    const ordersSnap = await getDocs(collection(db, 'orders'));
+    const usersSnap = await getDocs(collection(db, 'users'));
+    const chatsSnap = await getDocs(collection(db, 'chats'));
+    
+    let totalRevenue = 0;
+    ordersSnap.forEach(doc => { totalRevenue += doc.data().total || 0; });
+    
+    container.innerHTML = `
+      <div class="counter-grid" style="margin-top:0">
+        <div class="counter-card"><span class="counter-val">${ordersSnap.size}</span><span class="counter-label">📦 Заказов</span></div>
+        <div class="counter-card"><span class="counter-val">${usersSnap.size}</span><span class="counter-label">👥 Пользователей</span></div>
+        <div class="counter-card"><span class="counter-val">${chatsSnap.size}</span><span class="counter-label">💬 Чатов</span></div>
+        <div class="counter-card"><span class="counter-val">${totalRevenue.toLocaleString()} ₽</span><span class="counter-label">💰 Выручка</span></div>
+      </div>
+    `;
+  }
+
+  window.switchAdminTab = (tab) => {
+    document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    document.getElementById('adminOrdersList').style.display = tab === 'orders' ? 'block' : 'none';
+    document.getElementById('adminUsersList').style.display = tab === 'users' ? 'block' : 'none';
+    document.getElementById('adminChatsList').style.display = tab === 'chats' ? 'block' : 'none';
+    document.getElementById('adminPromoCodes').style.display = tab === 'promos' ? 'block' : 'none';
+    document.getElementById('adminStats').style.display = tab === 'stats' ? 'block' : 'none';
+    
+    if (tab === 'orders') loadAllOrders();
+    if (tab === 'users') loadAllUsers();
+    if (tab === 'chats') loadAllChats();
+    if (tab === 'promos') loadPromoCodes();
+    if (tab === 'stats') loadStats();
+  };
+
+  // Проверка прав админа
+  auth.onAuthStateChanged(async (user) => {
+    updateCartUI();
+    updateFavUI();
+    
+    if (!user) {
+      window.location.href = '/index.html';
+      return;
+    }
+    
+    const isAdmin = await checkIsAdmin(user);
+    if (!isAdmin) {
+      document.getElementById('adminStatus').innerHTML = '<span style="color:var(--error)">⛔ Доступ запрещен. Требуются права администратора.</span>';
+      setTimeout(() => { window.location.href = '/index.html'; }, 2000);
+      return;
+    }
+    
+    document.getElementById('adminStatus').innerHTML = '<span style="color:var(--success)">✅ Вы вошли как администратор</span>';
+    loadAllOrders();
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    updateCartUI();
+    updateFavUI();
+  });
+</script>
+</body>
+</html>
