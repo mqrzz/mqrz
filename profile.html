@@ -30,9 +30,7 @@
       <i class="fas fa-shopping-bag"></i>
       <div class="cart-count" id="cartCountBadge">0</div>
     </div>
-    <div id="authContainer" class="auth-buttons">
-      <button class="auth-btn" onclick="showAuthModal()">Войти / Регистрация</button>
-    </div>
+    <div id="authContainer" class="auth-buttons"></div>
   </div>
 </nav>
 
@@ -113,7 +111,8 @@
 
 <script type="module">
   import { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, updateProfile as updateAuthProfile, googleProvider, signInWithPopup, db, doc, getDoc, updateDoc, deleteDoc, collection, query, where, getDocs, orderBy, Timestamp } from './js/firebase-config.js';
-  import { showToast, showAuthModal, closeAuthModal, checkIsAdmin } from './js/main.js';
+  import { showToast, showAuthModal, closeAuthModal } from './js/main.js';
+  import { logout, resetPassword as resetPwd, deleteAccount as delAccount, updateUserProfile, checkIsAdmin } from './js/auth.js';
   import { updateCartUI, updateFavUI, favorites, servicesData, addToCart } from './js/cart.js';
 
   let currentUserData = null;
@@ -121,6 +120,7 @@
   window.showAuthModal = showAuthModal;
   window.closeAuthModal = closeAuthModal;
 
+  // Обработчики модалки
   window.handleLogin = async () => {
     const email = document.getElementById('authEmail').value;
     const password = document.getElementById('authPassword').value;
@@ -203,16 +203,21 @@
     }
   };
 
+  // Кнопки профиля
   window.resetPassword = async () => {
     if (auth.currentUser?.email) {
-      await sendPasswordResetEmail(auth, auth.currentUser.email);
-      showToast('Ссылка для сброса пароля отправлена на email', 'success');
+      await resetPwd(auth.currentUser.email);
     }
   };
 
   window.logout = async () => {
-    await auth.signOut();
-    window.location.href = '/index.html';
+    await logout();
+  };
+
+  window.deleteAccount = async () => {
+    if (confirm('Вы уверены? Аккаунт будет удален.')) {
+      await delAccount(auth.currentUser?.uid);
+    }
   };
 
   window.updateProfile = async () => {
@@ -223,40 +228,14 @@
     const telegram = document.getElementById('profileTelegram').value;
     const phone = document.getElementById('profilePhone').value;
     
-    try {
-      await updateDoc(doc(db, 'users', user.uid), {
-        displayName: displayName,
-        telegram: telegram,
-        phone: phone,
-        updatedAt: Timestamp.now()
-      });
-      
-      if (displayName) {
-        await updateAuthProfile(user, { displayName: displayName });
-      }
-      
-      showToast('Профиль обновлен', 'success');
-    } catch (error) {
-      showToast('Ошибка обновления', 'error');
+    await updateUserProfile(user.uid, { displayName, telegram, phone });
+    if (displayName) {
+      await updateAuthProfile(user, { displayName: displayName });
     }
+    await loadProfileData();
   };
 
-  window.deleteAccount = async () => {
-    if (confirm('Вы уверены? Аккаунт будет удален безвозвратно. Все данные будут стерты.')) {
-      const user = auth.currentUser;
-      if (user) {
-        try {
-          await deleteDoc(doc(db, 'users', user.uid));
-          await user.delete();
-          showToast('Аккаунт удален', 'success');
-          window.location.href = '/index.html';
-        } catch (error) {
-          showToast('Ошибка удаления. Возможно, требуется повторная авторизация.', 'error');
-        }
-      }
-    }
-  };
-
+  // Загрузка заказов
   async function loadUserOrders() {
     const user = auth.currentUser;
     if (!user) return;
@@ -294,12 +273,13 @@
           <div><strong>💰 Сумма:</strong> ${order.total} ₽</div>
           <div><strong>📅 Дата:</strong> ${order.createdAt?.toDate().toLocaleDateString()}</div>
           <div><strong>🛒 Состав:</strong> ${order.items?.map(i => `${i.name} x${i.quantity}`).join(', ')}</div>
-          ${order.promoCode ? `<div><strong>🎫 Промокод:</strong> ${order.promoCode} (скидка: ${order.discount || 0} ₽)</div>` : ''}
+          ${order.promoCode ? `<div><strong>🎫 Промокод:</strong> ${order.promoCode}</div>` : ''}
         </div>
       `;
     }).join('');
   }
 
+  // Избранное
   function loadProfileFavorites() {
     const container = document.getElementById('profileFavoritesList');
     const favServices = servicesData.filter(s => favorites.includes(s.id));
@@ -344,6 +324,7 @@
     }
   };
 
+  // Данные профиля
   async function loadProfileData() {
     const user = auth.currentUser;
     if (!user) return;
@@ -359,6 +340,7 @@
     }
   }
 
+  // Переключение вкладок
   window.switchProfileTab = (tab) => {
     document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
     event.target.classList.add('active');
@@ -371,7 +353,7 @@
     if (tab === 'orders') loadUserOrders();
   };
 
-  // Проверка авторизации и загрузка данных
+  // Проверка авторизации
   auth.onAuthStateChanged(async (user) => {
     updateCartUI();
     updateFavUI();
@@ -381,7 +363,6 @@
       return;
     }
     
-    // Показываем ссылку на админку если нужно
     const isAdmin = await checkIsAdmin(user);
     const adminLink = document.querySelector('.admin-link');
     if (adminLink && isAdmin) adminLink.style.display = 'block';
