@@ -22,17 +22,9 @@
     <a href="/contact.html">Контакты</a>
     <a href="/chat.html">Чат поддержки</a>
     <a href="/admin.html" class="admin-link" style="display:none">Админ-панель</a>
-    <div class="fav-icon" onclick="window.location.href='/favorites.html'">
-      <i class="fas fa-heart"></i>
-      <div class="cart-count" id="favCountBadge">0</div>
-    </div>
-    <div class="cart-icon" onclick="window.location.href='/order.html'">
-      <i class="fas fa-shopping-bag"></i>
-      <div class="cart-count" id="cartCountBadge">0</div>
-    </div>
-    <div id="authContainer" class="auth-buttons">
-      <button class="auth-btn" onclick="showAuthModal()">Войти / Регистрация</button>
-    </div>
+    <div class="fav-icon" onclick="window.location.href='/favorites.html'"><i class="fas fa-heart"></i><div class="cart-count" id="favCountBadge">0</div></div>
+    <div class="cart-icon" onclick="window.location.href='/order.html'"><i class="fas fa-shopping-bag"></i><div class="cart-count" id="cartCountBadge">0</div></div>
+    <div id="authContainer" class="auth-buttons"><button class="auth-btn" onclick="showAuthModal()">Войти / Регистрация</button></div>
   </div>
 </nav>
 
@@ -41,70 +33,32 @@
     <div class="section-label">Прайс-лист</div>
     <div class="section-title">Все услуги</div>
     <p class="section-sub">Выберите нужные услуги и добавьте в корзину — мы свяжемся с вами в течение 15 минут.</p>
-    
     <input type="text" id="searchInput" class="search-input" placeholder="🔍 Поиск услуг...">
-    
     <div class="services-grid" id="servicesGrid"></div>
   </div>
-  <footer>
-    <div class="copyright">© 2026 Design Antviz — Все права защищены</div>
-  </footer>
+  <footer><div class="copyright">© 2026 Design Antviz — Все права защищены</div></footer>
 </div>
 
-<!-- МОДАЛ УСЛУГИ -->
-<div class="modal-ov" id="modalOv">
-  <div class="modal-box">
-    <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
-    <div id="modalInner"></div>
-  </div>
-</div>
-
-<!-- МОДАЛ АВТОРИЗАЦИИ -->
-<div class="modal-ov" id="authModal">
-  <div class="modal-box">
-    <button class="modal-close" onclick="closeAuthModal()"><i class="fas fa-times"></i></button>
-    <div class="modal-title">Вход / Регистрация</div>
-    <div style="display:flex;flex-direction:column;gap:16px;margin-top:24px">
-      <input type="email" id="authEmail" class="form-input" placeholder="Email">
-      <input type="password" id="authPassword" class="form-input" placeholder="Пароль">
-      <button class="btn-primary" onclick="handleLogin()">Войти</button>
-      <button class="btn-ghost" onclick="handleRegister()">Зарегистрироваться</button>
-      <button class="btn-ghost" onclick="handleResetPassword()">Забыли пароль?</button>
-      <hr style="border-color:var(--border);margin:8px 0">
-      <button class="btn-ghost" onclick="handleGoogleLogin()"><i class="fab fa-google"></i> Войти через Google</button>
-    </div>
-  </div>
-</div>
+<div class="modal-ov" id="modalOv"><div class="modal-box"><button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button><div id="modalInner"></div></div></div>
+<div class="modal-ov" id="authModal"><div class="modal-box"><button class="modal-close" onclick="closeAuthModal()"><i class="fas fa-times"></i></button><div class="modal-title">Вход / Регистрация</div><div style="display:flex;flex-direction:column;gap:16px;margin-top:24px"><input type="email" id="authEmail" class="form-input" placeholder="Email"><input type="password" id="authPassword" class="form-input" placeholder="Пароль"><button class="btn-primary" onclick="handleLogin()">Войти</button><button class="btn-ghost" onclick="handleRegister()">Зарегистрироваться</button><button class="btn-ghost" onclick="handleResetPassword()">Забыли пароль?</button><hr style="border-color:var(--border);margin:8px 0"><button class="btn-ghost" onclick="handleGoogleLogin()"><i class="fab fa-google"></i> Войти через Google</button></div></div></div>
 
 <div class="toast" id="toast">✦ <span id="toastText"></span></div>
 
 <script type="module">
-  // ИМПОРТ ВСЕГО НЕОБХОДИМОГО
   import { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, googleProvider, signInWithPopup, doc, setDoc, getDoc, Timestamp, db } from './js/firebase-config.js';
-  import { initApp, showToast, showAuthModal, closeAuthModal, loginWithEmail, registerWithEmail, loginWithGoogle, resetPassword, addToCart, servicesData, updateCartUI, updateFavUI } from './js/main.js';
+  import { showToast, showAuthModal, closeAuthModal, addToCart, servicesData, updateCartUI, updateFavUI, initApp } from './js/main.js';
 
-  // Глобальные функции для HTML
   window.showAuthModal = showAuthModal;
   window.closeAuthModal = closeAuthModal;
   window.addToCart = addToCart;
 
-  // Обработчики модалки авторизации
   window.handleLogin = async () => {
     const email = document.getElementById('authEmail').value;
     const password = document.getElementById('authPassword').value;
     if (!email || !password) { showToast('Заполните все поля', 'error'); return; }
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      showToast('Вход выполнен', 'success');
-      closeAuthModal();
-      setTimeout(() => window.location.reload(), 500);
-    } catch (error) {
-      let msg = 'Ошибка входа';
-      if (error.code === 'auth/invalid-credential') msg = 'Неверный email или пароль';
-      showToast(msg, 'error');
-    }
+    try { await signInWithEmailAndPassword(auth, email, password); showToast('Вход выполнен', 'success'); closeAuthModal(); setTimeout(() => window.location.reload(), 500); }
+    catch(e) { showToast('Неверный email или пароль', 'error'); }
   };
-
   window.handleRegister = async () => {
     const email = document.getElementById('authEmail').value;
     const password = document.getElementById('authPassword').value;
@@ -112,69 +66,27 @@
     if (password.length < 6) { showToast('Пароль должен быть не менее 6 символов', 'error'); return; }
     try {
       const userCred = await createUserWithEmailAndPassword(auth, email, password);
-      await setDoc(doc(db, 'users', userCred.user.uid), {
-        email: email,
-        displayName: email.split('@')[0],
-        role: 'user',
-        createdAt: Timestamp.now(),
-        lastLogin: Timestamp.now(),
-        isBlocked: false,
-        isDeleted: false,
-        telegram: '',
-        phone: ''
-      });
-      showToast('Регистрация успешна!', 'success');
-      closeAuthModal();
-      setTimeout(() => window.location.reload(), 500);
-    } catch (error) {
-      let msg = 'Ошибка регистрации';
-      if (error.code === 'auth/email-already-in-use') msg = 'Email уже используется';
-      showToast(msg, 'error');
-    }
+      await setDoc(doc(db, 'users', userCred.user.uid), { email, displayName: email.split('@')[0], role: 'user', createdAt: Timestamp.now(), lastLogin: Timestamp.now(), isBlocked: false, telegram: '', phone: '' });
+      showToast('Регистрация успешна!', 'success'); closeAuthModal(); setTimeout(() => window.location.reload(), 500);
+    } catch(e) { showToast(e.code === 'auth/email-already-in-use' ? 'Email уже используется' : 'Ошибка регистрации', 'error'); }
   };
-
   window.handleGoogleLogin = async () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const userRef = doc(db, 'users', result.user.uid);
-      const userDoc = await getDoc(userRef);
-      if (!userDoc.exists()) {
-        await setDoc(userRef, {
-          email: result.user.email,
-          displayName: result.user.displayName || result.user.email.split('@')[0],
-          role: 'user',
-          createdAt: Timestamp.now(),
-          lastLogin: Timestamp.now(),
-          isBlocked: false,
-          isDeleted: false,
-          telegram: '',
-          phone: '',
-          avatar: result.user.photoURL || ''
-        });
-      }
-      showToast('Вход выполнен', 'success');
-      closeAuthModal();
-      setTimeout(() => window.location.reload(), 500);
-    } catch (error) {
-      showToast('Ошибка входа через Google', 'error');
-    }
+      if (!(await getDoc(userRef)).exists()) await setDoc(userRef, { email: result.user.email, displayName: result.user.displayName || result.user.email.split('@')[0], role: 'user', createdAt: Timestamp.now(), lastLogin: Timestamp.now(), isBlocked: false, telegram: '', phone: '', avatar: result.user.photoURL || '' });
+      showToast('Вход выполнен', 'success'); closeAuthModal(); setTimeout(() => window.location.reload(), 500);
+    } catch(e) { showToast('Ошибка входа через Google', 'error'); }
   };
-
   window.handleResetPassword = async () => {
     const email = document.getElementById('authEmail').value;
     if (!email) { showToast('Введите email', 'error'); return; }
-    try {
-      await sendPasswordResetEmail(auth, email);
-      showToast('Ссылка для сброса пароля отправлена', 'success');
-    } catch (error) {
-      showToast('Пользователь не найден', 'error');
-    }
+    try { await sendPasswordResetEmail(auth, email); showToast('Ссылка для сброса пароля отправлена', 'success'); }
+    catch(e) { showToast('Пользователь не найден', 'error'); }
   };
 
-  // Модалка услуги
   let currentModalService = null;
   let currentModalQty = 1;
-
   window.openModal = (id) => {
     const s = servicesData.find(x => x.id === id);
     if (!s) return;
@@ -184,107 +96,32 @@
       <div class="modal-title">${s.name}</div>
       <div class="modal-desc">${s.desc}</div>
       <ul class="modal-benefits">${s.benefits.map(b => `<li>${b}</li>`).join('')}</ul>
-      <div class="qty-ctrl">
-        <button class="qty-btn" onclick="changeQty(-1)">−</button>
-        <span class="qty-val" id="qtyVal">1</span>
-        <button class="qty-btn" onclick="changeQty(1)">+</button>
-      </div>
-      <div class="modal-footer">
-        <span class="modal-price">${s.price} ₽</span>
-        <button class="btn-primary" onclick="addFromModal()" style="border-radius:100px">Добавить в корзину</button>
-      </div>
+      <div class="qty-ctrl"><button class="qty-btn" onclick="changeQty(-1)">−</button><span class="qty-val" id="qtyVal">1</span><button class="qty-btn" onclick="changeQty(1)">+</button></div>
+      <div class="modal-footer"><span class="modal-price">${s.price} ₽</span><button class="btn-primary" onclick="addFromModal()">Добавить в корзину</button></div>
     `;
     document.getElementById('modalOv').classList.add('open');
   };
+  window.changeQty = (d) => { currentModalQty = Math.max(1, currentModalQty + d); document.getElementById('qtyVal').textContent = currentModalQty; };
+  window.addFromModal = () => { addToCart(currentModalService.id, currentModalQty); closeModal(); };
+  window.closeModal = () => { document.getElementById('modalOv').classList.remove('open'); };
 
-  window.changeQty = (d) => {
-    currentModalQty = Math.max(1, currentModalQty + d);
-    const qtyEl = document.getElementById('qtyVal');
-    if (qtyEl) qtyEl.textContent = currentModalQty;
-  };
-
-  window.addFromModal = () => {
-    addToCart(currentModalService.id, currentModalQty);
-    closeModal();
-  };
-
-  window.closeModal = () => {
-    document.getElementById('modalOv').classList.remove('open');
-  };
-
-  // Рендер услуг
   function renderServices(filter = '') {
-    const filtered = servicesData.filter(s => 
-      s.name.toLowerCase().includes(filter.toLowerCase()) || 
-      s.desc.toLowerCase().includes(filter.toLowerCase()) || 
-      s.tags.some(t => t.toLowerCase().includes(filter.toLowerCase()))
-    );
-    const container = document.getElementById('servicesGrid');
-    if (!container) return;
-    container.innerHTML = filtered.map(s => `
+    const filtered = servicesData.filter(s => s.name.toLowerCase().includes(filter.toLowerCase()) || s.desc.toLowerCase().includes(filter.toLowerCase()) || s.tags.some(t => t.toLowerCase().includes(filter.toLowerCase())));
+    document.getElementById('servicesGrid').innerHTML = filtered.map(s => `
       <div class="service-card" onclick="openModal(${s.id})">
         ${s.badge ? `<div class="service-badge">${s.badge}</div>` : ''}
         <div class="svc-icon"><i class="${s.icon}"></i></div>
         <h3>${s.name}</h3>
         <div class="service-desc">${s.desc}</div>
         <div class="svc-tags">${s.tags.map(t => `<span class="svc-tag">${t}</span>`).join('')}</div>
-        <div class="service-footer">
-          <div class="svc-price">${s.price} ₽</div>
-          <button class="add-btn" onclick="event.stopPropagation(); addToCart(${s.id}, 1)"><i class="fas fa-plus"></i></button>
-        </div>
+        <div class="service-footer"><div class="svc-price">${s.price} ₽</div><button class="add-btn" onclick="event.stopPropagation(); addToCart(${s.id}, 1)"><i class="fas fa-plus"></i></button></div>
       </div>
     `).join('');
   }
-
-  // Поиск
-  const searchInput = document.getElementById('searchInput');
-  if (searchInput) {
-    searchInput.addEventListener('input', (e) => renderServices(e.target.value));
-  }
-
-  // ОБНОВЛЕНИЕ КОРЗИНЫ И ИЗБРАННОГО
-  function updateCartUI() {
-    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-    const count = cart.reduce((s, i) => s + i.quantity, 0);
-    const badge = document.getElementById('cartCountBadge');
-    if (badge) badge.textContent = count;
-  }
-
-  function updateFavUI() {
-    const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
-    const badge = document.getElementById('favCountBadge');
-    if (badge) badge.textContent = favorites.length;
-  }
-
-  // ПРОВЕРКА АДМИНА
-  async function checkIsAdmin(user) {
-    if (!user) return false;
-    try {
-      const idTokenResult = await user.getIdTokenResult();
-      return idTokenResult.claims.admin === true;
-    } catch (error) {
-      return false;
-    }
-  }
-
-  // ИНИЦИАЛИЗАЦИЯ
-  document.addEventListener('DOMContentLoaded', () => {
-    initApp(); // ЗАПУСКАЕМ КУРСОР, ЗВЕЗДЫ, АНИМАЦИИ
-    renderServices();
-    updateCartUI();
-    updateFavUI();
-  });
-
-  // AUTH LISTENER ДЛЯ АДМИН-ССЫЛКИ
-  auth.onAuthStateChanged(async (user) => {
-    updateCartUI();
-    updateFavUI();
-    if (user) {
-      const isAdmin = await checkIsAdmin(user);
-      const adminLink = document.querySelector('.admin-link');
-      if (adminLink) adminLink.style.display = isAdmin ? 'block' : 'none';
-    }
-  });
+  document.getElementById('searchInput')?.addEventListener('input', (e) => renderServices(e.target.value));
+  async function checkAdmin() { const user = auth.currentUser; if(user) { const idTokenResult = await user.getIdTokenResult(); if(idTokenResult.claims.admin) document.querySelector('.admin-link').style.display = 'block'; } }
+  auth.onAuthStateChanged(() => { updateCartUI(); updateFavUI(); checkAdmin(); });
+  document.addEventListener('DOMContentLoaded', () => { initApp(); renderServices(); updateCartUI(); updateFavUI(); });
 </script>
 </body>
 </html>
