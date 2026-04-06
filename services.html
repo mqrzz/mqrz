@@ -42,7 +42,6 @@
     <div class="section-title">Все услуги</div>
     <p class="section-sub">Выберите нужные услуги и добавьте в корзину — мы свяжемся с вами в течение 15 минут.</p>
     
-    <!-- Поиск услуг -->
     <input type="text" id="searchInput" class="search-input" placeholder="🔍 Поиск услуг...">
     
     <div class="services-grid" id="servicesGrid"></div>
@@ -80,14 +79,16 @@
 <div class="toast" id="toast">✦ <span id="toastText"></span></div>
 
 <script type="module">
-  import { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, googleProvider, signInWithPopup, doc, setDoc, getDoc, Timestamp } from './js/firebase-config.js';
-  import { showToast, showAuthModal, closeAuthModal } from './js/main.js';
-  import { updateCartUI, addToCart, servicesData } from './js/cart.js';
-  import { updateFavUI, toggleFavorite, isFavorite } from './js/favorites.js';
+  // ИМПОРТ ВСЕГО НЕОБХОДИМОГО
+  import { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, googleProvider, signInWithPopup, doc, setDoc, getDoc, Timestamp, db } from './js/firebase-config.js';
+  import { initApp, showToast, showAuthModal, closeAuthModal, loginWithEmail, registerWithEmail, loginWithGoogle, resetPassword, addToCart, servicesData, updateCartUI, updateFavUI } from './js/main.js';
 
+  // Глобальные функции для HTML
   window.showAuthModal = showAuthModal;
   window.closeAuthModal = closeAuthModal;
+  window.addToCart = addToCart;
 
+  // Обработчики модалки авторизации
   window.handleLogin = async () => {
     const email = document.getElementById('authEmail').value;
     const password = document.getElementById('authPassword').value;
@@ -170,6 +171,7 @@
     }
   };
 
+  // Модалка услуги
   let currentModalService = null;
   let currentModalQty = 1;
 
@@ -178,7 +180,6 @@
     if (!s) return;
     currentModalService = s;
     currentModalQty = 1;
-    const isFav = isFavorite(s.id);
     document.getElementById('modalInner').innerHTML = `
       <div class="modal-title">${s.name}</div>
       <div class="modal-desc">${s.desc}</div>
@@ -192,9 +193,6 @@
         <span class="modal-price">${s.price} ₽</span>
         <button class="btn-primary" onclick="addFromModal()" style="border-radius:100px">Добавить в корзину</button>
       </div>
-      <button class="btn-ghost" style="margin-top:16px; width:100%" onclick="toggleFavoriteFromModal(${s.id})">
-        ${isFav ? '❤️ В избранном' : '♡ В избранное'}
-      </button>
     `;
     document.getElementById('modalOv').classList.add('open');
   };
@@ -210,24 +208,19 @@
     closeModal();
   };
 
-  window.toggleFavoriteFromModal = (id) => {
-    toggleFavorite(id);
-    openModal(id);
-  };
-
   window.closeModal = () => {
     document.getElementById('modalOv').classList.remove('open');
   };
 
-  // Рендер услуг с поиском
+  // Рендер услуг
   function renderServices(filter = '') {
     const filtered = servicesData.filter(s => 
       s.name.toLowerCase().includes(filter.toLowerCase()) || 
       s.desc.toLowerCase().includes(filter.toLowerCase()) || 
       s.tags.some(t => t.toLowerCase().includes(filter.toLowerCase()))
     );
-    
     const container = document.getElementById('servicesGrid');
+    if (!container) return;
     container.innerHTML = filtered.map(s => `
       <div class="service-card" onclick="openModal(${s.id})">
         ${s.badge ? `<div class="service-badge">${s.badge}</div>` : ''}
@@ -244,19 +237,54 @@
   }
 
   // Поиск
-  document.getElementById('searchInput')?.addEventListener('input', (e) => {
-    renderServices(e.target.value);
-  });
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => renderServices(e.target.value));
+  }
 
-  // Инициализация
+  // ОБНОВЛЕНИЕ КОРЗИНЫ И ИЗБРАННОГО
+  function updateCartUI() {
+    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    const count = cart.reduce((s, i) => s + i.quantity, 0);
+    const badge = document.getElementById('cartCountBadge');
+    if (badge) badge.textContent = count;
+  }
+
+  function updateFavUI() {
+    const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+    const badge = document.getElementById('favCountBadge');
+    if (badge) badge.textContent = favorites.length;
+  }
+
+  // ПРОВЕРКА АДМИНА
+  async function checkIsAdmin(user) {
+    if (!user) return false;
+    try {
+      const idTokenResult = await user.getIdTokenResult();
+      return idTokenResult.claims.admin === true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  // ИНИЦИАЛИЗАЦИЯ
   document.addEventListener('DOMContentLoaded', () => {
+    initApp(); // ЗАПУСКАЕМ КУРСОР, ЗВЕЗДЫ, АНИМАЦИИ
+    renderServices();
     updateCartUI();
     updateFavUI();
-    renderServices();
   });
 
-  // Экспорт в глобальный объект
-  window.addToCart = addToCart;
+  // AUTH LISTENER ДЛЯ АДМИН-ССЫЛКИ
+  auth.onAuthStateChanged(async (user) => {
+    updateCartUI();
+    updateFavUI();
+    if (user) {
+      const isAdmin = await checkIsAdmin(user);
+      const adminLink = document.querySelector('.admin-link');
+      if (adminLink) adminLink.style.display = isAdmin ? 'block' : 'none';
+    }
+  });
 </script>
 </body>
 </html>
