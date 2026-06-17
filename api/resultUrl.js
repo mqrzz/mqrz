@@ -28,11 +28,15 @@ export default async function handler(req, res) {
   }
 
   // Обновляем статус заказа в Firestore по Shp_orderId (строковый ID
-  // документа, который мы передали при создании платежа в createPayment.js)
+  // документа, который мы передали при создании платежа в createPayment.js).
+  // Важно: используем поле "paid" (boolean), а не "status" — поле status
+  // в этом проекте является числовым (0-5) и обозначает этап работы
+  // над заказом в админке (Новая заявка → ... → Готово), и управляется
+  // только вручную оттуда. Поле "paid" — отдельный флаг оплаты.
   if (Shp_orderId) {
     try {
       await db.collection('orders').doc(Shp_orderId).update({
-        status: 'paid',
+        paid: true,
         paidAt: new Date().toISOString(),
         invId: InvId,
         outSum: OutSum,
