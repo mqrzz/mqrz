@@ -15,21 +15,34 @@ export default function handler(req, res) {
   const isTest = true; // поменяй на false когда активируют магазин
   const pass1 = isTest ? process.env.ROBO_PASS1_TEST : process.env.ROBO_PASS1;
 
+  // Робокасса требует, чтобы InvId был ЦЕЛЫМ ЧИСЛОМ (до 2147483647).
+  // orderId у нас — строковый ID документа Firestore, поэтому отдельно
+  // генерируем числовой InvId на основе текущего времени.
+  const invId = Math.floor(Date.now() / 1000) % 2147483647;
+
+  // Сумма должна быть в формате с двумя знаками после точки (требование Робокассы)
+  const outSum = Number(amount).toFixed(2);
+
+  // Формула подписи для Index.aspx: login:OutSum:InvId:Password1
   const signature = crypto
     .createHash('md5')
-    .update(`${login}:${amount}:${pass1}:${orderId}`)
+    .update(`${login}:${outSum}:${pass1}:${invId}`)
     .digest('hex')
     .toUpperCase();
 
   const params = new URLSearchParams({
     MrchLogin: login,
-    OutSum: amount,
-    InvId: orderId,
+    OutSum: outSum,
+    InvId: String(invId),
     SignatureValue: signature,
     IsTest: isTest ? '1' : '0',
+    // Кастомный параметр Робокассы: она сохранит его и вернёт обратно
+    // без изменений на Result/Success/Fail URL. Так мы свяжем числовой
+    // InvId со строковым orderId из Firestore.
+    shp_orderId: orderId,
   });
 
   return res.status(200).json({
-    paymentUrl: `https://auth.robokassa.ru/Merchant/Index.aspx?${params}`
+    paymentUrl: `https://auth.robokassa.ru/Merchant/Index.aspx?${params}`,
   });
 }
