@@ -8,8 +8,13 @@ export default function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { orderId, amount } = req.body;
+  const { orderId, amount, type } = req.body;
   if (!orderId || !amount) return res.status(400).json({ error: 'orderId and amount required' });
+
+  // type различает, что именно оплачивается: 'order' — оплата заказа сайта
+  // (по умолчанию, для обратной совместимости с уже работающим order.html),
+  // 'support' — подключение/продление обслуживания сайта (500₽/мес)
+  const paymentType = type === 'support' ? 'support' : 'order';
 
   const login = process.env.ROBO_LOGIN;
   const isTest = true; // поменяй на false когда активируют магазин
@@ -23,13 +28,15 @@ export default function handler(req, res) {
   // Сумма должна быть в формате с двумя знаками после точки (требование Робокассы)
   const outSum = Number(amount).toFixed(2);
 
-  // Важно: регистр имени параметра Shp_orderId должен совпадать
-  // в самой подписи и в передаваемых данных — Robokassa чувствительна к регистру.
-  // Формула подписи для Index.aspx с пользовательским параметром:
-  // MerchantLogin:OutSum:InvId:Пароль#1:Shp_orderId=значение
+  // Важно: регистр имени параметра Shp_* должен совпадать в самой подписи
+  // и в передаваемых данных — Robokassa чувствительна к регистру. Также
+  // параметры Shp_* должны идти в формуле строго по алфавиту:
+  // Shp_orderId, затем Shp_type.
+  // Формула подписи для Index.aspx с пользовательскими параметрами:
+  // MerchantLogin:OutSum:InvId:Пароль#1:Shp_orderId=...:Shp_type=...
   const signature = crypto
     .createHash('md5')
-    .update(`${login}:${outSum}:${invId}:${pass1}:Shp_orderId=${orderId}`)
+    .update(`${login}:${outSum}:${invId}:${pass1}:Shp_orderId=${orderId}:Shp_type=${paymentType}`)
     .digest('hex')
     .toUpperCase();
 
@@ -39,11 +46,12 @@ export default function handler(req, res) {
     InvId: String(invId),
     SignatureValue: signature,
     IsTest: isTest ? '1' : '0',
-    // Кастомный параметр Робокассы: она сохранит его и вернёт обратно
+    // Кастомные параметры Робокассы: она сохранит их и вернёт обратно
     // без изменений на Result/Success/Fail URL. Так мы свяжем числовой
-    // InvId со строковым orderId из Firestore. Регистр имени параметра
-    // (Shp_orderId, не shp_orderId) должен точно совпадать с тем, что в подписи.
+    // InvId со строковым orderId из Firestore и поймём тип платежа.
+    // Регистр имён (Shp_orderId, Shp_type) должен точно совпадать с подписью.
     Shp_orderId: orderId,
+    Shp_type: paymentType,
   });
 
   return res.status(200).json({
