@@ -6,17 +6,20 @@ export default async function handler(req, res) {
 
   if (req.method !== 'POST') return res.status(405).end();
 
-  const { OutSum, InvId, SignatureValue, shp_orderId } = req.body;
+  const { OutSum, InvId, SignatureValue, Shp_orderId } = req.body;
 
   // Робокасса присылает IsTest в теле запроса для тестовых платежей —
   // по нему понимаем, каким паролем проверять подпись.
   const isTest = req.body.IsTest === '1' || req.body.IsTest === 1;
   const pass2 = isTest ? process.env.ROBO_PASS2_TEST : process.env.ROBO_PASS2;
 
-  // Формула подписи для Result URL: OutSum:InvId:Password2
+  // Формула подписи для Result URL: OutSum:InvId:Password2:Shp_orderId=значение
+  // Пользовательские параметры Shp_* обязательно участвуют в подписи,
+  // в алфавитном порядке (у нас он один, так что порядок не важен),
+  // регистр имени параметра должен совпадать с тем, что прислала Robokassa.
   const signature = crypto
     .createHash('md5')
-    .update(`${OutSum}:${InvId}:${pass2}`)
+    .update(`${OutSum}:${InvId}:${pass2}:Shp_orderId=${Shp_orderId}`)
     .digest('hex')
     .toUpperCase();
 
@@ -24,24 +27,24 @@ export default async function handler(req, res) {
     return res.status(400).send('bad sign');
   }
 
-  // Обновляем статус заказа в Firestore по shp_orderId (строковый ID
+  // Обновляем статус заказа в Firestore по Shp_orderId (строковый ID
   // документа, который мы передали при создании платежа в createPayment.js)
-  if (shp_orderId) {
+  if (Shp_orderId) {
     try {
-      await db.collection('orders').doc(shp_orderId).update({
+      await db.collection('orders').doc(Shp_orderId).update({
         status: 'paid',
         paidAt: new Date().toISOString(),
         invId: InvId,
         outSum: OutSum,
       });
-      console.log(`Заказ ${shp_orderId} (InvId ${InvId}) оплачен на сумму ${OutSum}`);
+      console.log(`Заказ ${Shp_orderId} (InvId ${InvId}) оплачен на сумму ${OutSum}`);
     } catch (err) {
       // Если заказ не нашёлся или обновление не удалось — логируем,
       // но Робокассе всё равно отвечаем OK, чтобы она не повторяла запрос
-      console.error(`Не удалось обновить заказ ${shp_orderId}:`, err.message);
+      console.error(`Не удалось обновить заказ ${Shp_orderId}:`, err.message);
     }
   } else {
-    console.warn(`Оплачен InvId ${InvId}, но shp_orderId не пришёл`);
+    console.warn(`Оплачен InvId ${InvId}, но Shp_orderId не пришёл`);
   }
 
   // Робокасса ожидает ответ строго в формате "OK{InvId}"
