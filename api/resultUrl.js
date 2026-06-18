@@ -69,13 +69,37 @@ export default async function handler(req, res) {
       // а не "status" — поле status в этом проекте является числовым
       // (0-5) и обозначает этап работы над заказом в админке (Новая
       // заявка → ... → Готово), и управляется только вручную оттуда.
-      await db.collection('orders').doc(Shp_orderId).update({
+      const orderRef = db.collection('orders').doc(Shp_orderId);
+      const snap = await orderRef.get();
+      const data = snap.exists ? snap.data() : {};
+
+      const updatePayload = {
         paid: true,
         paidAt: new Date().toISOString(),
         invId: InvId,
         outSum: OutSum,
-      });
-      console.log(`Заказ ${Shp_orderId} (InvId ${InvId}) оплачен на сумму ${OutSum}`);
+      };
+
+      // Если при оформлении заказа клиент включил опцию "Обслуживание",
+      // в extras лежит 'support', и первый месяц обслуживания уже учтён
+      // в сумме этого же платежа (отдельной оплаты за support не будет).
+      // Поэтому сразу активируем обслуживание на 30 дней — без второго
+      // перехода на Робокассу для клиента.
+      if (Array.isArray(data.extras) && data.extras.includes('support')) {
+        const now = new Date();
+        const currentExpiry = data.supportExpiresAt?.toDate ? data.supportExpiresAt.toDate() : null;
+        const base = currentExpiry && currentExpiry > now ? currentExpiry : now;
+        const newExpiry = new Date(base.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+        updatePayload.supportActive = true;
+        updatePayload.supportStartedAt = data.supportStartedAt || new Date().toISOString();
+        updatePayload.supportExpiresAt = newExpiry;
+        updatePayload.supportRequested = false;
+        updatePayload.expiryNotifSent = false;
+      }
+
+      await orderRef.update(updatePayload);
+      console.log(`Заказ ${Shp_orderId} (InvId ${InvId}) оплачен на сумму ${OutSum}${updatePayload.supportActive ? ', обслуживание активировано до ' + updatePayload.supportExpiresAt.toISOString() : ''}`);
     }
   } catch (err) {
     // Если заказ не нашёлся или обновление не удалось — логируем,
