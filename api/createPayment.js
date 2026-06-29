@@ -1,20 +1,13 @@
-import crypto from 'crypto';
 import { db } from './firebaseAdmin.js';
 
-// Единый источник цен — те же цифры, что в order.html (TIERS/extras) и
-// в profile/tickets.html (SUPPORT_PRICE). Если меняете цены на сайте —
-// меняйте и здесь, иначе сервер будет отклонять реальные платежи.
 const TIER_PRICES = {
-  'Старт': 3900,
-  'Рост': 9900,
+  'Старт':   3900,
+  'Рост':    9900,
   'Масштаб': 19900,
 };
 const EXTRA_PRICES = { domain: 650, support: 500, content: 2000, shop: 4900 };
 const SUPPORT_RENEWAL_PRICE = 500;
 
-// Пересчитывает сумму заказа на сервере из package/extras/promoCode,
-// которые лежат в самом документе Firestore — а не из amount, который
-// прислал браузер. Так сумму в Робокассе нельзя подделать через DevTools.
 async function calcOrderTotal(order) {
   const base = TIER_PRICES[order.package];
   if (base == null) throw new Error(`unknown package: ${order.package}`);
@@ -50,6 +43,13 @@ async function calcOrderTotal(order) {
   return Math.max(0, running - discount);
 }
 
+const PAYMENT_DESCRIPTIONS = {
+  order:     'Оплата заказа',
+  partial:   'Предоплата 50% за заказ',
+  remaining: 'Доплата остатка по заказу',
+  support:   'Продление технического обслуживания',
+};
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -61,10 +61,6 @@ export default async function handler(req, res) {
   const { orderId, type } = req.body;
   if (!orderId) return res.status(400).json({ error: 'orderId required' });
 
-  // type: 'order' — полная оплата заказа (по умолчанию)
-  //        'partial' — первая оплата 50% (предоплата)
-  //        'remaining' — доплата оставшихся 50%
-  //        'support' — продление обслуживания
   const paymentType = ['support', 'partial', 'remaining'].includes(type) ? type : 'order';
 
   let amount;
@@ -76,22 +72,16 @@ export default async function handler(req, res) {
 
     if (paymentType === 'support') {
       amount = SUPPORT_RENEWAL_PRICE;
-
     } else if (paymentType === 'partial') {
-      // Первая оплата: 50% от полной суммы, округлённой вверх
       if (data.paid) return res.status(400).json({ error: 'order already paid' });
       const total = await calcOrderTotal(data);
       amount = Math.ceil(total / 2);
-
     } else if (paymentType === 'remaining') {
-      // Доплата: считаем остаток как totalPrice минус уже оплаченное
       const paidAmount = data.paidAmount || 0;
       const total = await calcOrderTotal(data);
       amount = Math.max(0, total - paidAmount);
       if (amount === 0) return res.status(400).json({ error: 'already fully paid' });
-
     } else {
-      // Полная оплата ('order')
       if (data.paid) return res.status(400).json({ error: 'order already paid' });
       amount = await calcOrderTotal(data);
     }
@@ -100,32 +90,51 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'could not calculate price' });
   }
 
-  const login = process.env.ROBO_LOGIN;
-  const isTest = true; // поменяй на false когда активируют магазин
-  const pass1 = isTest ? process.env.ROBO_PASS1_TEST : process.env.ROBO_PASS1;
+  const shopId    = process.env.YUKASSA_SHOP_ID;
+  const secretKey = process.env.YUKASSA_SECRET_KEY;
+  const returnUrl = process.env.YUKASSA_RETURN_URL || 'https://mqrz.ru/profile/orders';
 
-  const invId = Math.floor(Date.now() / 1000) % 2147483647;
+  const idempotencyKey = `${orderId}-${paymentType}-${Date.now()}`;
   const outSum = Number(amount).toFixed(2);
 
-  // Shp_* параметры в подписи строго по алфавиту: Shp_orderId, Shp_type
-  const signature = crypto
-    .createHash('md5')
-    .update(`${login}:${outSum}:${invId}:${pass1}:Shp_orderId=${orderId}:Shp_type=${paymentType}`)
-    .digest('hex')
-    .toUpperCase();
+  const body = {
+    amount: { value: outSum, currency: 'RUB' },
+    confirmation: { type: 'redirect', return_url: returnUrl },
+    capture: true,
+    test: true,
+    description: `${PAYMENT_DESCRIPTIONS[paymentType]} #${orderId}`,
+    metadata: { orderId, type: paymentType },
+  };
 
-  const params = new URLSearchParams({
-    MerchantLogin: login,
-    OutSum: outSum,
-    InvId: String(invId),
-    SignatureValue: signature,
-    IsTest: isTest ? '1' : '0',
-    Shp_orderId: orderId,
-    Shp_type: paymentType,
-  });
+  try {
+    const response = await fetch('https://api.yookassa.ru/v3/payments', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Idempotence-Key': idempotencyKey,
+        'Authorization': 'Basic ' + Buffer.from(`${shopId}:${secretKey}`).toString('base64'),
+      },
+      body: JSON.stringify(body),
+    });
 
-  return res.status(200).json({
-    paymentUrl: `https://auth.robokassa.ru/Merchant/Index.aspx?${params}`,
-    amount,
-  });
+    if (!response.ok) {
+      const err = await response.text();
+      console.error('ЮКасса API error:', response.status, err);
+      return res.status(502).json({ error: 'payment provider error' });
+    }
+
+    const payment = await response.json();
+    const paymentUrl = payment.confirmation?.confirmation_url;
+
+    if (!paymentUrl) {
+      console.error('ЮКасса не вернула confirmation_url:', payment);
+      return res.status(502).json({ error: 'no confirmation url' });
+    }
+
+    return res.status(200).json({ paymentUrl, amount, paymentId: payment.id });
+
+  } catch (err) {
+    console.error('Ошибка запроса к ЮКасса:', err.message);
+    return res.status(502).json({ error: 'payment provider unavailable' });
+  }
 }
