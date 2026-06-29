@@ -8,7 +8,7 @@ const TIER_PRICES = {
   'Рост':    9900,
   'Масштаб': 19900,
 };
-const EXTRA_PRICES = { domain: 650, support: 500, content: 2000, shop: 4900 };
+const EXTRA_PRICES = { support: 500, content: 2000, shop: 4900 }; // domain всегда бесплатно (рег.ру)
 const SUPPORT_RENEWAL_PRICE = 500;
 
 // Пересчитывает сумму заказа на сервере из package/extras/promoCode,
@@ -20,9 +20,8 @@ async function calcOrderTotal(order) {
 
   let running = base;
   const extras = Array.isArray(order.extras) ? order.extras : [];
-  // 'domain' = подключение своего домена (650₽)
-  // 'domain_reg' = покупка домена на рег.ру — оплачивается там же, не здесь
-  for (const key of ['domain', 'support', 'content', 'shop']) {
+  // domain_reg и domain_own — бесплатно, домен оплачивается на рег.ру
+  for (const key of ['support', 'content', 'shop']) {
     if (extras.includes(key)) running += EXTRA_PRICES[key];
   }
   if (extras.includes('urgent')) {
