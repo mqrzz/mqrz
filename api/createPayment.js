@@ -4,9 +4,9 @@ import { db } from './firebaseAdmin.js';
 // в profile/tickets.html (SUPPORT_PRICE). Если меняете цены на сайте —
 // меняйте и здесь, иначе сервер будет отклонять реальные платежи.
 const TIER_PRICES = {
-  'Старт':   3900,
-  'Рост':    9900,
-  'Масштаб': 19900,
+  'Старт':   2900,
+  'Рост':    5900,
+  'Масштаб': 11900,
 };
 const EXTRA_PRICES = { support: 500, content: 2000, shop: 4900 }; // domain всегда бесплатно (рег.ру)
 const SUPPORT_RENEWAL_PRICE = 500;
