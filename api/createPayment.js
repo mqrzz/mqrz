@@ -1,5 +1,8 @@
 import { db } from './firebaseAdmin.js';
 
+// Единый источник цен — те же цифры, что в order.html (TIERS/extras) и
+// в profile/tickets.html (SUPPORT_PRICE). Если меняете цены на сайте —
+// меняйте и здесь, иначе сервер будет отклонять реальные платежи.
 const TIER_PRICES = {
   'Старт':   3900,
   'Рост':    9900,
@@ -8,12 +11,17 @@ const TIER_PRICES = {
 const EXTRA_PRICES = { domain: 650, support: 500, content: 2000, shop: 4900 };
 const SUPPORT_RENEWAL_PRICE = 500;
 
+// Пересчитывает сумму заказа на сервере из package/extras/promoCode,
+// которые лежат в самом документе Firestore — а не из amount, который
+// прислал браузер. Так сумму в ЮКасса нельзя подделать через DevTools.
 async function calcOrderTotal(order) {
   const base = TIER_PRICES[order.package];
   if (base == null) throw new Error(`unknown package: ${order.package}`);
 
   let running = base;
   const extras = Array.isArray(order.extras) ? order.extras : [];
+  // 'domain' = подключение своего домена (650₽)
+  // 'domain_reg' = покупка домена на рег.ру — оплачивается там же, не здесь
   for (const key of ['domain', 'support', 'content', 'shop']) {
     if (extras.includes(key)) running += EXTRA_PRICES[key];
   }
@@ -43,6 +51,7 @@ async function calcOrderTotal(order) {
   return Math.max(0, running - discount);
 }
 
+// Описания платежей для чека ЮКасса
 const PAYMENT_DESCRIPTIONS = {
   order:     'Оплата заказа',
   partial:   'Предоплата 50% за заказ',
@@ -61,6 +70,10 @@ export default async function handler(req, res) {
   const { orderId, type } = req.body;
   if (!orderId) return res.status(400).json({ error: 'orderId required' });
 
+  // type: 'order'     — полная оплата заказа (по умолчанию)
+  //        'partial'  — первая оплата 50% (предоплата)
+  //        'remaining'— доплата оставшихся 50%
+  //        'support'  — продление обслуживания
   const paymentType = ['support', 'partial', 'remaining'].includes(type) ? type : 'order';
 
   let amount;
@@ -72,15 +85,18 @@ export default async function handler(req, res) {
 
     if (paymentType === 'support') {
       amount = SUPPORT_RENEWAL_PRICE;
+
     } else if (paymentType === 'partial') {
       if (data.paid) return res.status(400).json({ error: 'order already paid' });
       const total = await calcOrderTotal(data);
       amount = Math.ceil(total / 2);
+
     } else if (paymentType === 'remaining') {
       const paidAmount = data.paidAmount || 0;
       const total = await calcOrderTotal(data);
       amount = Math.max(0, total - paidAmount);
       if (amount === 0) return res.status(400).json({ error: 'already fully paid' });
+
     } else {
       if (data.paid) return res.status(400).json({ error: 'order already paid' });
       amount = await calcOrderTotal(data);
@@ -90,19 +106,30 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'could not calculate price' });
   }
 
-  const shopId    = process.env.YUKASSA_SHOP_ID;
-  const secretKey = process.env.YUKASSA_SECRET_KEY;
-  const returnUrl = process.env.YUKASSA_RETURN_URL || 'https://mqrz.ru/profile/orders';
+  const shopId     = process.env.YUKASSA_SHOP_ID;
+  const secretKey  = process.env.YUKASSA_SECRET_KEY;
+  const returnUrl  = process.env.YUKASSA_RETURN_URL || 'https://mqrz.ru/profile/orders';
 
+  // Idempotency-Key — уникален для каждой попытки платежа
   const idempotencyKey = `${orderId}-${paymentType}-${Date.now()}`;
+
   const outSum = Number(amount).toFixed(2);
 
   const body = {
-    amount: { value: outSum, currency: 'RUB' },
-    confirmation: { type: 'redirect', return_url: returnUrl },
-    capture: true,
+    amount: {
+      value: outSum,
+      currency: 'RUB',
+    },
+    confirmation: {
+      type: 'redirect',
+      return_url: returnUrl,
+    },
+    capture: true,           // автоматическое подтверждение
     description: `${PAYMENT_DESCRIPTIONS[paymentType]} #${orderId}`,
-    metadata: { orderId, type: paymentType },
+    metadata: {
+      orderId,
+      type: paymentType,
+    },
   };
 
   try {
@@ -111,6 +138,7 @@ export default async function handler(req, res) {
       headers: {
         'Content-Type': 'application/json',
         'Idempotence-Key': idempotencyKey,
+        // Basic Auth: shopId:secretKey в base64
         'Authorization': 'Basic ' + Buffer.from(`${shopId}:${secretKey}`).toString('base64'),
       },
       body: JSON.stringify(body),
@@ -130,7 +158,11 @@ export default async function handler(req, res) {
       return res.status(502).json({ error: 'no confirmation url' });
     }
 
-    return res.status(200).json({ paymentUrl, amount, paymentId: payment.id });
+    return res.status(200).json({
+      paymentUrl,
+      amount,
+      paymentId: payment.id,   // можно сохранить для отладки
+    });
 
   } catch (err) {
     console.error('Ошибка запроса к ЮКасса:', err.message);
