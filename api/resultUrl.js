@@ -71,6 +71,8 @@ export default async function handler(req, res) {
         invId: InvId,
         outSum: OutSum,
         // paid остаётся false — заказ не считается полностью оплаченным
+        // Если статус был -1 (ожидание оплаты) — переводим в 0 (новая заявка)
+        ...(data.status === -1 ? { status: 0 } : {}),
       };
 
       await orderRef.update(updatePayload);
@@ -117,6 +119,8 @@ export default async function handler(req, res) {
         paidAt: new Date().toISOString(),
         invId: InvId,
         outSum: OutSum,
+        // Если статус был -1 (ожидание оплаты) — переводим в 0 (новая заявка)
+        ...(data.status === -1 ? { status: 0 } : {}),
       };
 
       if (Array.isArray(data.extras) && data.extras.includes('support')) {
