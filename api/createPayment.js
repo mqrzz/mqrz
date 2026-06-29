@@ -101,7 +101,6 @@ export default async function handler(req, res) {
     amount: { value: outSum, currency: 'RUB' },
     confirmation: { type: 'redirect', return_url: returnUrl },
     capture: true,
-    test: true,
     description: `${PAYMENT_DESCRIPTIONS[paymentType]} #${orderId}`,
     metadata: { orderId, type: paymentType },
   };
