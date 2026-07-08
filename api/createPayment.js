@@ -13,7 +13,7 @@ const SUPPORT_RENEWAL_PRICE = 500;
 
 // Пересчитывает сумму заказа на сервере из package/extras/promoCode,
 // которые лежат в самом документе Firestore — а не из amount, который
-// прислал браузер. Так сумму в ЮКасса нельзя подделать через DevTools.
+// прислал браузер. Так сумму в ЮКасса нельзя подделать через DevTools
 async function calcOrderTotal(order) {
   const base = TIER_PRICES[order.package];
   if (base == null) throw new Error(`unknown package: ${order.package}`);
