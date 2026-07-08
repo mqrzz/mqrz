@@ -31,12 +31,17 @@ export default async function handler(req, res) {
     });
     if (!verifyResp.ok) {
       console.error(`Webhook: не удалось проверить платёж ${incomingPayment.id} в ЮКассе, статус ${verifyResp.status}`);
-      return res.status(200).send('ok'); // ЮКасса повторит вебхук позже
+      // ВАЖНО: раньше здесь возвращался 200, а комментарий утверждал, что "ЮКасса
+      // повторит вебхук позже" — но ЮКасса повторяет доставку только если НЕ получила
+      // 200. Ответ 200 при непройденной проверке означал "успешно обработано", и
+      // вебхук больше не приходил — платёж мог остаться незасчитанным навсегда при
+      // временном сбое сети/ЮКассы. Возвращаем ошибку, чтобы вызвать повтор.
+      return res.status(502).send('verify failed, retry');
     }
     payment = await verifyResp.json();
   } catch (err) {
     console.error(`Webhook: ошибка проверки платежа ${incomingPayment.id}:`, err.message);
-    return res.status(200).send('ok');
+    return res.status(502).send('verify failed, retry');
   }
 
   const { orderId, type: paymentType } = payment.metadata || {};
@@ -85,6 +90,28 @@ export default async function handler(req, res) {
     return res.status(200).send('ok');
   }
 
+  // ИДЕМПОТЕНТНОСТЬ: ЮКасса может продублировать доставку одного и того же
+  // вебхука (сетевые ретраи с их стороны, таймаут ответа и т.п. — это
+  // нормально и прямо предусмотрено их API). Раньше повторная доставка
+  // 'partial'/'remaining' приводила бы к повторному прибавлению уже учтённой
+  // суммы (paidBefore + outSum) — деньги задваивались бы в базе, хотя
+  // реально оплата была одна. Продление поддержки страдало бы так же
+  // (лишние +30 дней). Атомарно "застолбим" paymentId отдельным документом:
+  // если он уже существует — это точно дубликат, второй раз ничего не
+  // применяем.
+  const claimRef = db.collection('processedPayments').doc(paymentId);
+  try {
+    await claimRef.create({ orderId, type: pType, outSum, processedAt: new Date() });
+  } catch (err) {
+    const alreadyExists = err.code === 6 || /already exists/i.test(err.message || '');
+    if (alreadyExists) {
+      console.log(`Webhook: payment ${paymentId} уже обработан ранее — пропускаем дубликат`);
+      return res.status(200).send('ok');
+    }
+    console.error(`Webhook: не удалось создать метку идемпотентности для ${paymentId}:`, err.message);
+    return res.status(502).send('idempotency claim failed, retry');
+  }
+
   try {
     const orderRef = db.collection('orders').doc(orderId);
     const snap = await orderRef.get();
@@ -97,10 +124,11 @@ export default async function handler(req, res) {
       const newExpiry = new Date(base.getTime() + 30 * 24 * 60 * 60 * 1000);
       await orderRef.update({
         supportActive: true,
-        supportStartedAt: data.supportStartedAt || now.toISOString(),
+        supportStartedAt: data.supportStartedAt || now,
         supportExpiresAt: newExpiry,
         supportRequested: false,
         expiryNotifSent: false,
+        yukassaPaymentId: paymentId,
       });
       console.log(`Обслуживание заказа ${orderId} продлено до ${newExpiry.toISOString()}`);
 
@@ -110,7 +138,7 @@ export default async function handler(req, res) {
       await orderRef.update({
         paidAmount: outSum,
         remainingAmount: remaining,
-        paidAt: new Date().toISOString(),
+        paidAt: new Date(),
         yukassaPaymentId: paymentId,
         outSum: String(outSum),
         ...(data.status === -1 ? { status: 0 } : {}),
@@ -124,17 +152,17 @@ export default async function handler(req, res) {
         paid: true,
         paidAmount: totalPaid,
         remainingAmount: 0,
-        paidAt: new Date().toISOString(),
-        remainingPaidAt: new Date().toISOString(),
+        paidAt: new Date(),
+        remainingPaidAt: new Date(),
         yukassaPaymentId: paymentId,
         outSum: String(outSum),
-        ...(data.status === 6 ? { status: 5, doneAt: new Date().toISOString() } : {}),
+        ...(data.status === 6 ? { status: 5, doneAt: new Date() } : {}),
       };
       if (Array.isArray(data.extras) && data.extras.includes('support')) {
         const now = new Date();
         const newExpiry = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
         updatePayload.supportActive = true;
-        updatePayload.supportStartedAt = data.supportStartedAt || now.toISOString();
+        updatePayload.supportStartedAt = data.supportStartedAt || now;
         updatePayload.supportExpiresAt = newExpiry;
         updatePayload.supportRequested = false;
         updatePayload.expiryNotifSent = false;
@@ -145,9 +173,9 @@ export default async function handler(req, res) {
     } else {
       const updatePayload = {
         paid: true,
-        paidAmount: outSum,
+        paidAmount: (data.paidAmount || 0) + outSum,
         remainingAmount: 0,
-        paidAt: new Date().toISOString(),
+        paidAt: new Date(),
         yukassaPaymentId: paymentId,
         outSum: String(outSum),
         ...(data.status === -1 ? { status: 0 } : {}),
@@ -158,7 +186,7 @@ export default async function handler(req, res) {
         const base = currentExpiry && currentExpiry > now ? currentExpiry : now;
         const newExpiry = new Date(base.getTime() + 30 * 24 * 60 * 60 * 1000);
         updatePayload.supportActive = true;
-        updatePayload.supportStartedAt = data.supportStartedAt || now.toISOString();
+        updatePayload.supportStartedAt = data.supportStartedAt || now;
         updatePayload.supportExpiresAt = newExpiry;
         updatePayload.supportRequested = false;
         updatePayload.expiryNotifSent = false;
@@ -168,6 +196,10 @@ export default async function handler(req, res) {
     }
   } catch (err) {
     console.error(`Не удалось обновить заказ ${orderId}:`, err.message);
+    // Раньше здесь всё равно возвращался 200 — ЮКасса считала вебхук
+    // доставленным, а заказ в базе оставался необновлённым (не отмечен
+    // оплаченным). Возвращаем ошибку, чтобы получить повтор вебхука.
+    return res.status(502).send('order update failed, retry');
   }
 
   // ЮКасса ожидает статус 200
