@@ -19,7 +19,7 @@ export default async function handler(req, res) {
   // ссылках/логах), мог бы прислать поддельный "succeeded" и получить заказ
   // бесплатно. Поэтому статус платежа не берём из event.object.status, а
   // запрашиваем его у самой ЮКассы по paymentId — это единственный
-  // источник, которому можно верить. Рекомендация самой ЮКассы.
+  // источник, которому можно верить. Рекомендация самой ЮКассы
   const shopId    = process.env.YUKASSA_SHOP_ID;
   const secretKey = process.env.YUKASSA_SECRET_KEY;
   let payment;
