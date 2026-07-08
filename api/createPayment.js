@@ -87,6 +87,12 @@ export default async function handler(req, res) {
 
     } else if (paymentType === 'partial') {
       if (data.paid) return res.status(400).json({ error: 'order already paid' });
+      // Раньше тут не проверялось, не была ли предоплата уже внесена. Если
+      // бы этот эндпоинт вызвали дважды с type=partial (повторный клик,
+      // старая вкладка, случайный повтор запроса) — создавалась бы вторая
+      // предоплата ещё на 50% от суммы, и заказ оказывался переплачен без
+      // способа это увидеть на этом шаге.
+      if (data.paidAmount > 0) return res.status(400).json({ error: 'partial payment already made, use type=remaining' });
       const total = await calcOrderTotal(data);
       amount = Math.ceil(total / 2);
 
@@ -98,7 +104,17 @@ export default async function handler(req, res) {
 
     } else {
       if (data.paid) return res.status(400).json({ error: 'order already paid' });
-      amount = await calcOrderTotal(data);
+      // Раньше здесь считалась полная сумма заказа с нуля, не глядя на то,
+      // вносилась ли уже предоплата (data.paidAmount). Если бы этот путь
+      // вызвался на заказе с уже принятой предоплатой (например, случайный
+      // повторный вызов из старой вкладки на шаге оформления), клиента
+      // отправили бы платить 100% суммы заново поверх уже оплаченных 50% —
+      // реальная переплата. Теперь всегда считаем именно остаток к оплате,
+      // как и в ветке 'remaining'.
+      const total = await calcOrderTotal(data);
+      const paidAmount = data.paidAmount || 0;
+      amount = Math.max(0, total - paidAmount);
+      if (amount === 0) return res.status(400).json({ error: 'already fully paid' });
     }
   } catch (err) {
     console.error('Не удалось посчитать сумму заказа:', err.message);
