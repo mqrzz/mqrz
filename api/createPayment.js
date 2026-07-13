@@ -1,4 +1,4 @@
-import { db } from './firebaseAdmin.js';
+import { db, auth } from './firebaseAdmin.js';
 
 // Единый источник цен — те же цифры, что в order.html (TIERS/extras) и
 // в profile/tickets.html (SUPPORT_PRICE). Если меняете цены на сайте —
@@ -58,13 +58,33 @@ const PAYMENT_DESCRIPTIONS = {
   support:   'Продление технического обслуживания',
 };
 
+const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || 'https://antviz.ru';
+
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  // Раньше здесь стоял '*' — с любого сайта можно было дёргать этот
+  // эндпоинт из браузера. Платёжный API сужаем до собственного домена.
+  res.setHeader('Access-Control-Allow-Origin', ALLOWED_ORIGIN);
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+  // Раньше эндпоинт принимал orderId без проверки, кто его вызывает — зная
+  // (или подобрав) orderId, можно было сгенерировать платёжную ссылку на
+  // чужой заказ и получить в ответе его сумму. Теперь требуем Firebase ID
+  // token и ниже сверяем, что вызывающий — владелец заказа.
+  const authHeader = req.headers.authorization || '';
+  const idToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  if (!idToken) return res.status(401).json({ error: 'auth required' });
+
+  let callerUid;
+  try {
+    const decoded = await auth.verifyIdToken(idToken);
+    callerUid = decoded.uid;
+  } catch (err) {
+    return res.status(401).json({ error: 'invalid or expired auth token' });
+  }
 
   const { orderId, type } = req.body;
   if (!orderId) return res.status(400).json({ error: 'orderId required' });
@@ -81,6 +101,10 @@ export default async function handler(req, res) {
     const snap = await orderRef.get();
     if (!snap.exists) return res.status(404).json({ error: 'order not found' });
     const data = snap.data();
+
+    if (data.uid !== callerUid) {
+      return res.status(403).json({ error: 'not your order' });
+    }
 
     if (paymentType === 'support') {
       amount = SUPPORT_RENEWAL_PRICE;
