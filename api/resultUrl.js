@@ -1,4 +1,5 @@
 import { db } from './firebaseAdmin.js';
+import { calcOrderTotal } from './pricing.js';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -64,44 +65,21 @@ export default async function handler(req, res) {
     ? paymentType
     : 'order';
 
-  // Оплата отменена/не прошла — удаляем зависшую заявку, если по ней ещё
-  // не было ни одного успешного платежа (иначе можно случайно снести живой
-  // заказ, у которого просто не удалась доплата остатка).
+  // Оплата отменена/не прошла.
+  // БАГ (найден и исправлен): раньше при первой же отменённой/непройденной
+  // оплате (type=order или type=partial) заказ удалялся из Firestore
+  // ЦЕЛИКОМ, если по нему ещё не было ни одного успешного платежа — то есть
+  // если клиент просто вернулся со страницы ЮКассы, не оплатив (передумал,
+  // случайно закрыл вкладку, платёж не прошёл банк и т.п.), заявка со всем
+  // описанием, вложениями и брифом мгновенно исчезала без предупреждения.
+  // Это неожиданно и разрушительно — клиенту пришлось бы заполнять форму
+  // заново. Теперь ничего не удаляем: заказ остаётся в базе как есть
+  // (status:-1, не оплачен), клиент может просто попробовать оплатить ещё
+  // раз. По-настоящему брошенные заявки и так подчищаются по TTL —
+  // см. cleanupStalePending() в order.html (10 минут), так что мусор в базе
+  // не копится, а свежие попытки оплаты больше никого не пугают пропажей.
   if (payment.status === 'canceled') {
-    console.log(`Webhook: payment ${paymentId} status=canceled, orderId=${orderId}, type=${pType}`);
-    if (pType === 'order' || pType === 'partial') {
-      try {
-        const orderRef = db.collection('orders').doc(orderId);
-        const snap = await orderRef.get();
-        if (snap.exists) {
-          const data = snap.data();
-          const neverPaid = data.status === -1 && !(data.paidAmount > 0);
-          if (neverPaid) {
-            await orderRef.delete();
-            console.log(`Заказ ${orderId} удалён — оплата отменена/не прошла, заявка не была подтверждена`);
-          }
-        }
-      } catch (err) {
-        console.error(`Не удалось удалить неоплаченный заказ ${orderId}:`, err.message);
-      }
-    } else if (pType === 'ticket_once' && ticketId) {
-      // Разовая заявка создаётся клиентом сразу в awaiting_payment/paid:false —
-      // если оплата отменена/не прошла, зависший неоплаченный тикет нужно
-      // убрать, иначе он остаётся в базе, никогда не станет open и просто
-      // молча потеряется для клиента.
-      try {
-        const ticketRef = db.collection('service_tickets').doc(ticketId);
-        const ticketSnap = await ticketRef.get();
-        if (ticketSnap.exists && ticketSnap.data().paid !== true) {
-          await ticketRef.delete();
-          console.log(`Разовая заявка ${ticketId} удалена — оплата отменена/не прошла`);
-        }
-      } catch (err) {
-        console.error(`Не удалось удалить неоплаченную заявку ${ticketId}:`, err.message);
-      }
-    }
-    // 'remaining' и 'support' — заказ уже существует и оплачен частично/ранее,
-    // при отмене доплаты его удалять нельзя, просто ничего не делаем.
+    console.log(`Webhook: payment ${paymentId} status=canceled, orderId=${orderId}, type=${pType} — заявка не тронута, оплату можно повторить`);
     return res.status(200).send('ok');
   }
 
@@ -174,9 +152,19 @@ export default async function handler(req, res) {
       // финансах заказа, как это было бы через ветку 'order' ниже.
 
     } else if (pType === 'partial') {
-      const total = data.totalPrice || 0;
+      // БАГ: раньше здесь брали data.totalPrice — сумму, посчитанную и
+      // сохранённую клиентом ещё на этапе оформления заказа. Если к моменту
+      // обработки вебхука промокод уже истёк/деактивировался/не подходил
+      // этому uid, calcOrderTotal() при создании платежа (createPayment.js)
+      // считал total БЕЗ скидки, а этот код всё равно вычитал списанную
+      // сумму из старого, "скидочного" totalPrice — remainingAmount,
+      // который видел клиент в личном кабинете, не совпадал с суммой,
+      // которую реально спишет доплата. Пересчитываем total тем же способом,
+      // что и при создании платежа — единственным источником истины.
+      const total = await calcOrderTotal(db, data);
       const remaining = Math.max(0, total - outSum);
       await orderRef.update({
+        totalPrice: total,
         paidAmount: outSum,
         remainingAmount: remaining,
         paidAt: new Date(),
