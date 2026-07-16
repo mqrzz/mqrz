@@ -1,69 +1,5 @@
 import { db, auth } from './firebaseAdmin.js';
-
-// Единый источник цен — те же цифры, что в order.html (TIERS/extras) и
-// в profile/tickets.html (тарифы обслуживания SUPPORT_TARIFFS, разовая
-// заявка ONE_OFF_TICKET_PRICE). Если меняете цены на сайте — меняйте и
-// здесь, иначе сервер будет отклонять реальные платежи.
-const TIER_PRICES = {
-  'Старт':   2900,
-  'Рост':    5900,
-  'Масштаб': 11900,
-};
-const EXTRA_PRICES = { support: 500, content: 2000, shop: 4900 }; // domain всегда бесплатно (рег.ру)
-
-// Тарифы обслуживания (profile/tickets.html) — источник истины для сервера.
-// tariff, присланный с фронта, только выбирает КЛЮЧ; цену и лимит берём
-// отсюда, а не из тела запроса — иначе можно подделать сумму в DevTools.
-const SUPPORT_TARIFFS = {
-  basic:    { price: 500,  limit: 5 },
-  priority: { price: 1200, limit: 20 },
-};
-const DEFAULT_SUPPORT_TARIFF = 'basic';
-
-// Разовая правка без подписки на обслуживание (tickets.html, кнопка
-// «Оформить разово»). Тикет создаётся клиентом сразу в Firestore со
-// статусом awaiting_payment/paid:false — вебхук ЮКасса обязан перевести
-// его в open/paid:true только после подтверждения оплаты.
-const ONE_OFF_TICKET_PRICE = 350;
-
-// Пересчитывает сумму заказа на сервере из package/extras/promoCode,
-// которые лежат в самом документе Firestore — а не из amount, который
-// прислал браузер. Так сумму в ЮКасса нельзя подделать через DevTools
-async function calcOrderTotal(order) {
-  const base = TIER_PRICES[order.package];
-  if (base == null) throw new Error(`unknown package: ${order.package}`);
-
-  let running = base;
-  const extras = Array.isArray(order.extras) ? order.extras : [];
-  // domain_reg и domain_own — бесплатно, домен оплачивается на рег.ру
-  for (const key of ['support', 'content', 'shop']) {
-    if (extras.includes(key)) running += EXTRA_PRICES[key];
-  }
-  if (extras.includes('urgent')) {
-    running += Math.round(running * 0.3);
-  }
-
-  let discount = 0;
-  if (order.promoCode) {
-    const snap = await db.collection('promoCodes')
-      .where('code', '==', order.promoCode)
-      .where('active', '==', true)
-      .limit(1)
-      .get();
-    if (!snap.empty) {
-      const p = snap.docs[0].data();
-      const expired = p.expiresAt?.toDate ? p.expiresAt.toDate() < new Date() : false;
-      const wrongUser = p.forUid && p.forUid !== order.uid;
-      if (!expired && !wrongUser) {
-        discount = p.discountType === 'percent'
-          ? Math.round(running * p.discountValue / 100)
-          : Math.min(p.discountValue, running);
-      }
-    }
-  }
-
-  return Math.max(0, running - discount);
-}
+import { SUPPORT_TARIFFS, DEFAULT_SUPPORT_TARIFF, ONE_OFF_TICKET_PRICE, calcOrderTotal } from './pricing.js';
 
 // Описания платежей для чека ЮКасса
 const PAYMENT_DESCRIPTIONS = {
@@ -157,12 +93,12 @@ export default async function handler(req, res) {
       // предоплата ещё на 50% от суммы, и заказ оказывался переплачен без
       // способа это увидеть на этом шаге.
       if (data.paidAmount > 0) return res.status(400).json({ error: 'partial payment already made, use type=remaining' });
-      const total = await calcOrderTotal(data);
+      const total = await calcOrderTotal(db, data);
       amount = Math.ceil(total / 2);
 
     } else if (paymentType === 'remaining') {
       const paidAmount = data.paidAmount || 0;
-      const total = await calcOrderTotal(data);
+      const total = await calcOrderTotal(db, data);
       amount = Math.max(0, total - paidAmount);
       if (amount === 0) return res.status(400).json({ error: 'already fully paid' });
 
@@ -175,7 +111,7 @@ export default async function handler(req, res) {
       // отправили бы платить 100% суммы заново поверх уже оплаченных 50% —
       // реальная переплата. Теперь всегда считаем именно остаток к оплате,
       // как и в ветке 'remaining'.
-      const total = await calcOrderTotal(data);
+      const total = await calcOrderTotal(db, data);
       const paidAmount = data.paidAmount || 0;
       amount = Math.max(0, total - paidAmount);
       if (amount === 0) return res.status(400).json({ error: 'already fully paid' });
