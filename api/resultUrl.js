@@ -44,16 +44,23 @@ export default async function handler(req, res) {
     return res.status(502).send('verify failed, retry');
   }
 
-  const { orderId, type: paymentType } = payment.metadata || {};
+  const { orderId, type: paymentType, tariff, ticketId } = payment.metadata || {};
   const outSum = parseFloat(payment.amount?.value) || 0;
   const paymentId = payment.id;
+
+  // Тариф обслуживания кладётся в metadata самим createPayment.js на
+  // сервере (не из тела клиентского запроса), так что доверяем ему — но
+  // на случай платежей, оформленных до появления этого поля, откатываемся
+  // на 'basic', а не пишем в заказ что попало.
+  const SUPPORT_TARIFF_KEYS = ['basic', 'priority'];
+  const supportTariffKey = SUPPORT_TARIFF_KEYS.includes(tariff) ? tariff : 'basic';
 
   if (!orderId) {
     console.warn(`Webhook: payment ${paymentId} без orderId в metadata`);
     return res.status(200).send('ok');
   }
 
-  const pType = ['support', 'partial', 'remaining'].includes(paymentType)
+  const pType = ['support', 'partial', 'remaining', 'ticket_once'].includes(paymentType)
     ? paymentType
     : 'order';
 
@@ -76,6 +83,21 @@ export default async function handler(req, res) {
         }
       } catch (err) {
         console.error(`Не удалось удалить неоплаченный заказ ${orderId}:`, err.message);
+      }
+    } else if (pType === 'ticket_once' && ticketId) {
+      // Разовая заявка создаётся клиентом сразу в awaiting_payment/paid:false —
+      // если оплата отменена/не прошла, зависший неоплаченный тикет нужно
+      // убрать, иначе он остаётся в базе, никогда не станет open и просто
+      // молча потеряется для клиента.
+      try {
+        const ticketRef = db.collection('service_tickets').doc(ticketId);
+        const ticketSnap = await ticketRef.get();
+        if (ticketSnap.exists && ticketSnap.data().paid !== true) {
+          await ticketRef.delete();
+          console.log(`Разовая заявка ${ticketId} удалена — оплата отменена/не прошла`);
+        }
+      } catch (err) {
+        console.error(`Не удалось удалить неоплаченную заявку ${ticketId}:`, err.message);
       }
     }
     // 'remaining' и 'support' — заказ уже существует и оплачен частично/ранее,
@@ -126,11 +148,30 @@ export default async function handler(req, res) {
         supportActive: true,
         supportStartedAt: data.supportStartedAt || now,
         supportExpiresAt: newExpiry,
+        supportTariff: supportTariffKey,
         supportRequested: false,
         expiryNotifSent: false,
         yukassaPaymentId: paymentId,
       });
-      console.log(`Обслуживание заказа ${orderId} продлено до ${newExpiry.toISOString()}`);
+      console.log(`Обслуживание заказа ${orderId} продлено до ${newExpiry.toISOString()} (тариф ${supportTariffKey})`);
+
+    } else if (pType === 'ticket_once') {
+      if (!ticketId) {
+        console.warn(`Webhook: payment ${paymentId} type=ticket_once без ticketId в metadata`);
+      } else {
+        const ticketRef = db.collection('service_tickets').doc(ticketId);
+        await ticketRef.update({
+          paid: true,
+          status: 'open',
+          paidAt: new Date(),
+          yukassaPaymentId: paymentId,
+        });
+        console.log(`Разовая заявка ${ticketId} оплачена (${outSum}₽) и переведена в open`);
+      }
+      // Разовая правка — это отдельный платёж 350₽ за конкретный тикет,
+      // а не часть суммы заказа: заказ (paid/paidAmount и т.п.) здесь
+      // намеренно не трогаем, иначе оплата тикета задваивалась бы в
+      // финансах заказа, как это было бы через ветку 'order' ниже.
 
     } else if (pType === 'partial') {
       const total = data.totalPrice || 0;
@@ -164,6 +205,11 @@ export default async function handler(req, res) {
         updatePayload.supportActive = true;
         updatePayload.supportStartedAt = data.supportStartedAt || now;
         updatePayload.supportExpiresAt = newExpiry;
+        // extras.support — это фиксированная доплата 500₽ при оформлении
+        // заказа (EXTRA_PRICES.support), а не выбор тарифа из SUPPORT_TARIFFS,
+        // так что это всегда 'basic', а не то, что случайно окажется в
+        // supportTariffKey из metadata другого платежа.
+        updatePayload.supportTariff = 'basic';
         updatePayload.supportRequested = false;
         updatePayload.expiryNotifSent = false;
       }
@@ -188,6 +234,7 @@ export default async function handler(req, res) {
         updatePayload.supportActive = true;
         updatePayload.supportStartedAt = data.supportStartedAt || now;
         updatePayload.supportExpiresAt = newExpiry;
+        updatePayload.supportTariff = 'basic'; // extras.support = фикс. 500₽, не выбор тарифа
         updatePayload.supportRequested = false;
         updatePayload.expiryNotifSent = false;
       }
