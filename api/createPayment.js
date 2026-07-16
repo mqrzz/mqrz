@@ -1,15 +1,30 @@
 import { db, auth } from './firebaseAdmin.js';
 
 // Единый источник цен — те же цифры, что в order.html (TIERS/extras) и
-// в profile/tickets.html (SUPPORT_PRICE). Если меняете цены на сайте —
-// меняйте и здесь, иначе сервер будет отклонять реальные платежи.
+// в profile/tickets.html (тарифы обслуживания SUPPORT_TARIFFS, разовая
+// заявка ONE_OFF_TICKET_PRICE). Если меняете цены на сайте — меняйте и
+// здесь, иначе сервер будет отклонять реальные платежи.
 const TIER_PRICES = {
   'Старт':   2900,
   'Рост':    5900,
   'Масштаб': 11900,
 };
 const EXTRA_PRICES = { support: 500, content: 2000, shop: 4900 }; // domain всегда бесплатно (рег.ру)
-const SUPPORT_RENEWAL_PRICE = 500;
+
+// Тарифы обслуживания (profile/tickets.html) — источник истины для сервера.
+// tariff, присланный с фронта, только выбирает КЛЮЧ; цену и лимит берём
+// отсюда, а не из тела запроса — иначе можно подделать сумму в DevTools.
+const SUPPORT_TARIFFS = {
+  basic:    { price: 500,  limit: 5 },
+  priority: { price: 1200, limit: 20 },
+};
+const DEFAULT_SUPPORT_TARIFF = 'basic';
+
+// Разовая правка без подписки на обслуживание (tickets.html, кнопка
+// «Оформить разово»). Тикет создаётся клиентом сразу в Firestore со
+// статусом awaiting_payment/paid:false — вебхук ЮКасса обязан перевести
+// его в open/paid:true только после подтверждения оплаты.
+const ONE_OFF_TICKET_PRICE = 350;
 
 // Пересчитывает сумму заказа на сервере из package/extras/promoCode,
 // которые лежат в самом документе Firestore — а не из amount, который
@@ -52,10 +67,11 @@ async function calcOrderTotal(order) {
 
 // Описания платежей для чека ЮКасса
 const PAYMENT_DESCRIPTIONS = {
-  order:     'Оплата заказа',
-  partial:   'Предоплата 50% за заказ',
-  remaining: 'Доплата остатка по заказу',
-  support:   'Продление технического обслуживания',
+  order:      'Оплата заказа',
+  partial:    'Предоплата 50% за заказ',
+  remaining:  'Доплата остатка по заказу',
+  support:    'Продление технического обслуживания',
+  ticket_once:'Оплата разовой заявки на доработку',
 };
 
 const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || 'https://antviz.ru';
@@ -86,16 +102,18 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: 'invalid or expired auth token' });
   }
 
-  const { orderId, type } = req.body;
+  const { orderId, type, tariff, ticketId } = req.body;
   if (!orderId) return res.status(400).json({ error: 'orderId required' });
 
-  // type: 'order'     — полная оплата заказа (по умолчанию)
-  //        'partial'  — первая оплата 50% (предоплата)
-  //        'remaining'— доплата оставшихся 50%
-  //        'support'  — продление обслуживания
-  const paymentType = ['support', 'partial', 'remaining'].includes(type) ? type : 'order';
+  // type: 'order'      — полная оплата заказа (по умолчанию)
+  //        'partial'   — первая оплата 50% (предоплата)
+  //        'remaining' — доплата оставшихся 50%
+  //        'support'   — подключение/продление обслуживания (см. tariff)
+  //        'ticket_once' — разовая правка без подписки (см. ticketId)
+  const paymentType = ['support', 'partial', 'remaining', 'ticket_once'].includes(type) ? type : 'order';
 
   let amount;
+  let paymentMeta = {};
   try {
     const orderRef = db.collection('orders').doc(orderId);
     const snap = await orderRef.get();
@@ -107,7 +125,29 @@ export default async function handler(req, res) {
     }
 
     if (paymentType === 'support') {
-      amount = SUPPORT_RENEWAL_PRICE;
+      // Ключ тарифа выбирает клиент, но цену и лимит берём только из
+      // SUPPORT_TARIFFS на сервере. Неизвестный/отсутствующий ключ —
+      // откатываемся на basic, а не на присланную цену.
+      const tariffKey = Object.prototype.hasOwnProperty.call(SUPPORT_TARIFFS, tariff)
+        ? tariff
+        : DEFAULT_SUPPORT_TARIFF;
+      amount = SUPPORT_TARIFFS[tariffKey].price;
+      paymentMeta.tariff = tariffKey;
+
+    } else if (paymentType === 'ticket_once') {
+      if (!ticketId) return res.status(400).json({ error: 'ticketId required' });
+      const ticketRef = db.collection('service_tickets').doc(ticketId);
+      const ticketSnap = await ticketRef.get();
+      if (!ticketSnap.exists) return res.status(404).json({ error: 'ticket not found' });
+      const ticket = ticketSnap.data();
+      // Тикет должен принадлежать вызывающему и относиться к тому же
+      // заказу, что и orderId в запросе — иначе можно оплатить чужую
+      // заявку по чужому orderId, подобрав ticketId.
+      if (ticket.uid !== callerUid) return res.status(403).json({ error: 'not your ticket' });
+      if (ticket.orderId !== orderId) return res.status(400).json({ error: 'ticket/order mismatch' });
+      if (ticket.paid) return res.status(400).json({ error: 'ticket already paid' });
+      amount = ONE_OFF_TICKET_PRICE;
+      paymentMeta.ticketId = ticketId;
 
     } else if (paymentType === 'partial') {
       if (data.paid) return res.status(400).json({ error: 'order already paid' });
@@ -150,7 +190,7 @@ export default async function handler(req, res) {
   const returnUrl  = process.env.YUKASSA_RETURN_URL || 'https://mqrz.ru/profile/orders';
 
   // Idempotency-Key — уникален для каждой попытки платежа
-  const idempotencyKey = `${orderId}-${paymentType}-${Date.now()}`;
+  const idempotencyKey = `${orderId}-${paymentType}-${ticketId || ''}-${Date.now()}`;
 
   const outSum = Number(amount).toFixed(2);
 
@@ -168,6 +208,7 @@ export default async function handler(req, res) {
     metadata: {
       orderId,
       type: paymentType,
+      ...paymentMeta,
     },
   };
 
