@@ -15,7 +15,10 @@ export const TIER_PRICES = {
   'Рост':    5900,
   'Масштаб': 11900,
 };
-export const EXTRA_PRICES = { support: 500, content: 2000, shop: 4900 }; // domain всегда бесплатно (рег.ру)
+export const EXTRA_PRICES = { content: 2000, shop: 4900 }; // domain всегда бесплатно (рег.ру)
+// Обслуживание НЕ продаётся как extra при оформлении заказа — это отдельная
+// подписка (SUPPORT_TARIFFS ниже), которую можно купить только из
+// profile/tickets.html после того, как заказ уже готов.
 
 export const SUPPORT_TARIFFS = {
   basic:    { price: 500,  limit: 5 },
@@ -31,7 +34,7 @@ export async function calcOrderTotal(db, order) {
 
   let running = base;
   const extras = Array.isArray(order.extras) ? order.extras : [];
-  for (const key of ['support', 'content', 'shop']) {
+  for (const key of ['content', 'shop']) {
     if (extras.includes(key)) running += EXTRA_PRICES[key];
   }
   if (extras.includes('urgent')) {
