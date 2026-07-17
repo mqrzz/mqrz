@@ -130,6 +130,7 @@ export default async function handler(req, res) {
         supportRequested: false,
         expiryNotifSent: false,
         yukassaPaymentId: paymentId,
+        lastPaymentAt: now,
       });
       console.log(`Обслуживание заказа ${orderId} продлено до ${newExpiry.toISOString()} (тариф ${supportTariffKey})`);
 
@@ -170,6 +171,7 @@ export default async function handler(req, res) {
         paidAt: new Date(),
         yukassaPaymentId: paymentId,
         outSum: String(outSum),
+        lastPaymentAt: new Date(),
         ...(data.status === -1 ? { status: 0 } : {}),
       });
       console.log(`Заказ ${orderId}: предоплата ${outSum}₽, осталось ${remaining}₽`);
@@ -185,6 +187,7 @@ export default async function handler(req, res) {
         remainingPaidAt: new Date(),
         yukassaPaymentId: paymentId,
         outSum: String(outSum),
+        lastPaymentAt: new Date(),
         ...(data.status === 6 ? { status: 5, doneAt: new Date() } : {}),
       };
       if (Array.isArray(data.extras) && data.extras.includes('support')) {
@@ -212,6 +215,7 @@ export default async function handler(req, res) {
         paidAt: new Date(),
         yukassaPaymentId: paymentId,
         outSum: String(outSum),
+        lastPaymentAt: new Date(),
         ...(data.status === -1 ? { status: 0 } : {}),
       };
       if (Array.isArray(data.extras) && data.extras.includes('support')) {
