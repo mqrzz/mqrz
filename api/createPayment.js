@@ -2,7 +2,7 @@ import { randomUUID } from 'crypto';
 import { db, auth } from './firebaseAdmin.js';
 import { SUPPORT_TARIFFS, DEFAULT_SUPPORT_TARIFF, ONE_OFF_TICKET_PRICE, calcOrderTotal } from './pricing.js';
 
-// Описания платежей для чека ЮКасса.
+// Описания платежей для чека ЮКасса
 const PAYMENT_DESCRIPTIONS = {
   order:      'Оплата заказа',
   partial:    'Предоплата 50% за заказ',
