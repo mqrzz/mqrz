@@ -15,7 +15,7 @@ const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || 'https://antviz.ru';
 
 export default async function handler(req, res) {
   // Раньше здесь стоял '*' — с любого сайта можно было дёргать этот
-  // эндпоинт из браузера. Платёжный API сужаем до собственного домена.
+  // эндпоинт из браузера. Платёжный API сужаем до собственного домена
   res.setHeader('Access-Control-Allow-Origin', ALLOWED_ORIGIN);
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
