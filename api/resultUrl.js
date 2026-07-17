@@ -190,20 +190,8 @@ export default async function handler(req, res) {
         lastPaymentAt: new Date(),
         ...(data.status === 6 ? { status: 5, doneAt: new Date() } : {}),
       };
-      if (Array.isArray(data.extras) && data.extras.includes('support')) {
-        const now = new Date();
-        const newExpiry = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-        updatePayload.supportActive = true;
-        updatePayload.supportStartedAt = data.supportStartedAt || now;
-        updatePayload.supportExpiresAt = newExpiry;
-        // extras.support — это фиксированная доплата 500₽ при оформлении
-        // заказа (EXTRA_PRICES.support), а не выбор тарифа из SUPPORT_TARIFFS,
-        // так что это всегда 'basic', а не то, что случайно окажется в
-        // supportTariffKey из metadata другого платежа.
-        updatePayload.supportTariff = 'basic';
-        updatePayload.supportRequested = false;
-        updatePayload.expiryNotifSent = false;
-      }
+      // Обслуживание не привязано к extras заказа — это отдельная подписка,
+      // покупается только из profile/tickets.html (см. ветку pType==='support' выше).
       await orderRef.update(updatePayload);
       console.log(`Заказ ${orderId}: доплата ${outSum}₽, итого ${totalPaid}₽`);
 
@@ -218,18 +206,8 @@ export default async function handler(req, res) {
         lastPaymentAt: new Date(),
         ...(data.status === -1 ? { status: 0 } : {}),
       };
-      if (Array.isArray(data.extras) && data.extras.includes('support')) {
-        const now = new Date();
-        const currentExpiry = data.supportExpiresAt?.toDate ? data.supportExpiresAt.toDate() : null;
-        const base = currentExpiry && currentExpiry > now ? currentExpiry : now;
-        const newExpiry = new Date(base.getTime() + 30 * 24 * 60 * 60 * 1000);
-        updatePayload.supportActive = true;
-        updatePayload.supportStartedAt = data.supportStartedAt || now;
-        updatePayload.supportExpiresAt = newExpiry;
-        updatePayload.supportTariff = 'basic'; // extras.support = фикс. 500₽, не выбор тарифа
-        updatePayload.supportRequested = false;
-        updatePayload.expiryNotifSent = false;
-      }
+      // Обслуживание не привязано к extras заказа — это отдельная подписка,
+      // покупается только из profile/tickets.html (см. ветку pType==='support' выше).
       await orderRef.update(updatePayload);
       console.log(`Заказ ${orderId} (payment ${paymentId}) полностью оплачен на ${outSum}₽`);
     }
