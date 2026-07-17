@@ -7,7 +7,7 @@ const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || 'https://antviz.ru';
 // только если он попал в базу недавно. Без этого окна data.paid === true
 // был бы true вообще всегда для любого раз оплаченного заказа — и страница
 // payment-success показывала бы "оплачено" даже тому, кто просто открыл
-// её напрямую по старой ссылке или угадал orderId.
+// её напрямую по старой ссылке или угадал orderId
 const RECENT_WINDOW_MS = 15 * 60 * 1000; // 15 минут
 
 function toDate(v) {
