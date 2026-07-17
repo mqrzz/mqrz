@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { db, auth } from './firebaseAdmin.js';
 import { SUPPORT_TARIFFS, DEFAULT_SUPPORT_TARIFF, ONE_OFF_TICKET_PRICE, calcOrderTotal } from './pricing.js';
 
@@ -125,8 +126,15 @@ export default async function handler(req, res) {
   const secretKey  = process.env.YUKASSA_SECRET_KEY;
   const returnUrl  = process.env.YUKASSA_RETURN_URL || 'https://mqrz.ru/profile/orders';
 
-  // Idempotency-Key — уникален для каждой попытки платежа
-  const idempotencyKey = `${orderId}-${paymentType}-${ticketId || ''}-${Date.now()}`;
+  // Idempotency-Key — уникален для каждой попытки платежа.
+  // БАГ (найден и исправлен): раньше ключ собирался как
+  // `${orderId}-${paymentType}-${ticketId || ''}-${Date.now()}`. Для обычных
+  // платежей (без ticketId) он укладывался в лимит ЮКассы, но для
+  // ticket_once добавлялся ещё и ticketId (~20 символов Firestore ID) —
+  // итоговая строка превышала 64 символа, и ЮКасса отвечала 400
+  // invalid_request: "Idempotence key is too long". UUID всегда короче
+  // лимита и гарантированно уникален для каждой попытки.
+  const idempotencyKey = randomUUID();
 
   const outSum = Number(amount).toFixed(2);
 
