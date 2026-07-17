@@ -124,7 +124,13 @@ export default async function handler(req, res) {
 
   const shopId     = process.env.YUKASSA_SHOP_ID;
   const secretKey  = process.env.YUKASSA_SECRET_KEY;
-  const returnUrl  = process.env.YUKASSA_RETURN_URL || 'https://mqrz.ru/profile/orders';
+  const baseReturnUrl = process.env.YUKASSA_RETURN_URL || 'https://mqrz.ru/profile/orders';
+
+  // Страница payment-success должна знать, какой именно платёж проверять
+  // после редиректа — прикладываем orderId/type/ticketId к return_url.
+  const returnParams = new URLSearchParams({ orderId, type: paymentType });
+  if (ticketId) returnParams.set('ticketId', ticketId);
+  const returnUrl = `${baseReturnUrl}${baseReturnUrl.includes('?') ? '&' : '?'}${returnParams.toString()}`;
 
   // Idempotency-Key — уникален для каждой попытки платежа.
   // БАГ (найден и исправлен): раньше ключ собирался как
