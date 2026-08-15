@@ -14,8 +14,16 @@ export const TIER_PRICES = {
   'Старт':   2900,
   'Рост':    5900,
   'Масштаб': 11900,
+  // Тарифы Telegram-ботов/мини-аппов — должны 1-в-1 совпадать с TIERS в order.html
+  'Простой бот':   4900,
+  'Бот с оплатой': 9900,
+  'Mini App':      16900,
 };
-export const EXTRA_PRICES = { content: 2000, shop: 4900 }; // domain всегда бесплатно (рег.ру)
+export const EXTRA_PRICES = {
+  content: 2000, shop: 4900, // domain всегда бесплатно (рег.ру)
+  // Опции для Telegram-ботов — должны совпадать с ценами extras в order.html
+  bot_pay: 3000, bot_crm: 2500,
+};
 // Обслуживание НЕ продаётся как extra при оформлении заказа — это отдельная
 // подписка (SUPPORT_TARIFFS ниже), которую можно купить только из
 // profile/tickets.html после того, как заказ уже готов.
@@ -34,7 +42,11 @@ export async function calcOrderTotal(db, order) {
 
   let running = base;
   const extras = Array.isArray(order.extras) ? order.extras : [];
-  for (const key of ['content', 'shop']) {
+  // Раньше здесь был захардкожен список ['content','shop'] — при добавлении
+  // новой опции (например для ботов) её пришлось бы ещё раз вручную дописывать
+  // сюда, иначе цена в extras была бы прописана, но не применялась. Теперь
+  // сумма опций считается по всем ключам, реально присутствующим в EXTRA_PRICES.
+  for (const key of Object.keys(EXTRA_PRICES)) {
     if (extras.includes(key)) running += EXTRA_PRICES[key];
   }
   if (extras.includes('urgent')) {
