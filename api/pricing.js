@@ -1,14 +1,4 @@
 // Единый источник цен и логики расчёта суммы заказа.
-// ВАЖНО: раньше createPayment.js и resultUrl.js считали сумму по-разному —
-// createPayment.js всегда пересчитывал total из package/extras/promoCode,
-// а resultUrl.js (вебхук) при type=partial брал готовое поле data.totalPrice,
-// записанное клиентом ещё на этапе оформления заказа. Если промокод к моменту
-// вебхука становился невалидным (истёк срок/деактивирован/предназначен другому
-// uid), calcOrderTotal() в createPayment.js уже не давал скидку, а вебхук всё
-// равно опирался на старое посчитанное с скидкой totalPrice — сумма "остатка",
-// которую видел клиент в личном кабинете, переставала совпадать с суммой,
-// которую реально спишет платёжный эндпоинт. Теперь оба места используют
-// один и тот же calcOrderTotal(), так что расхождений быть не может.
 
 export const TIER_PRICES = {
   'Старт':   2900,
@@ -21,12 +11,8 @@ export const TIER_PRICES = {
 };
 export const EXTRA_PRICES = {
   content: 2000, shop: 4900, // domain всегда бесплатно (рег.ру)
-  // Опции для Telegram-ботов — должны совпадать с ценами extras в order.html
   bot_pay: 3000, bot_crm: 2500,
 };
-// Обслуживание НЕ продаётся как extra при оформлении заказа — это отдельная
-// подписка (SUPPORT_TARIFFS ниже), которую можно купить только из
-// profile/tickets.html после того, как заказ уже готов.
 
 export const SUPPORT_TARIFFS = {
   basic:    { price: 500,  limit: 5 },
@@ -36,16 +22,17 @@ export const DEFAULT_SUPPORT_TARIFF = 'basic';
 
 export const ONE_OFF_TICKET_PRICE = 350;
 
-export async function calcOrderTotal(db, order) {
+// order здесь — объект заказа, как его отдаёт наш API (camelCase:
+// package, extras, promoCode и т.д.), НЕ сырой Firestore-документ.
+// apiAsUser передаём, чтобы сходить в /api/promo-codes/:code от лица
+// того же юзера — так действуют те же правила (истёк/не для него),
+// что и при обычной проверке промокода на форме заказа.
+export async function calcOrderTotal(order, { apiAsUser, token } = {}) {
   const base = TIER_PRICES[order.package];
   if (base == null) throw new Error(`unknown package: ${order.package}`);
 
   let running = base;
   const extras = Array.isArray(order.extras) ? order.extras : [];
-  // Раньше здесь был захардкожен список ['content','shop'] — при добавлении
-  // новой опции (например для ботов) её пришлось бы ещё раз вручную дописывать
-  // сюда, иначе цена в extras была бы прописана, но не применялась. Теперь
-  // сумма опций считается по всем ключам, реально присутствующим в EXTRA_PRICES.
   for (const key of Object.keys(EXTRA_PRICES)) {
     if (extras.includes(key)) running += EXTRA_PRICES[key];
   }
@@ -54,21 +41,19 @@ export async function calcOrderTotal(db, order) {
   }
 
   let discount = 0;
-  if (order.promoCode) {
-    const snap = await db.collection('promoCodes')
-      .where('code', '==', order.promoCode)
-      .where('active', '==', true)
-      .limit(1)
-      .get();
-    if (!snap.empty) {
-      const p = snap.docs[0].data();
-      const expired = p.expiresAt?.toDate ? p.expiresAt.toDate() < new Date() : false;
-      const wrongUser = p.forUid && p.forUid !== order.uid;
-      if (!expired && !wrongUser) {
+  if (order.promoCode && apiAsUser && token) {
+    try {
+      const resp = await apiAsUser(`/promo-codes/${encodeURIComponent(order.promoCode)}`, token);
+      if (resp.ok) {
+        const p = await resp.json();
         discount = p.discountType === 'percent'
           ? Math.round(running * p.discountValue / 100)
           : Math.min(p.discountValue, running);
       }
+      // Промокод невалиден/не найден/не для этого юзера — эндпоинт вернёт
+      // не-ok, discount просто остаётся 0, как и было в исходной логике.
+    } catch (e) {
+      // Сеть недоступна и т.п. — считаем без скидки, не роняем весь расчёт цены
     }
   }
 
