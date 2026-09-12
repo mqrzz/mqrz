@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
 import { apiAsUser } from './apiClient.js';
-import { SUPPORT_TARIFFS, DEFAULT_SUPPORT_TARIFF, ONE_OFF_TICKET_PRICE, calcOrderTotal } from './pricing.js';
+import { getCanonicalPricing } from './pricing.js';
 
 const PAYMENT_DESCRIPTIONS = {
   order:      'Оплата заказа',
@@ -44,8 +44,9 @@ export default async function handler(req, res) {
     const order = await orderResp.json();
 
     if (paymentType === 'support') {
-      const tariffKey = Object.prototype.hasOwnProperty.call(SUPPORT_TARIFFS, tariff) ? tariff : DEFAULT_SUPPORT_TARIFF;
-      amount = SUPPORT_TARIFFS[tariffKey].price;
+      const { supportTariffs, defaultSupportTariff } = await getCanonicalPricing();
+      const tariffKey = Object.prototype.hasOwnProperty.call(supportTariffs, tariff) ? tariff : defaultSupportTariff;
+      amount = supportTariffs[tariffKey].price;
       paymentMeta.tariff = tariffKey;
 
     } else if (paymentType === 'ticket_once') {
@@ -57,26 +58,33 @@ export default async function handler(req, res) {
       const ticket = await ticketResp.json();
       if (ticket.orderId !== orderId) return res.status(400).json({ error: 'ticket/order mismatch' });
       if (ticket.paid) return res.status(400).json({ error: 'ticket already paid' });
-      amount = ONE_OFF_TICKET_PRICE;
+      const { oneOffTicketPrice } = await getCanonicalPricing();
+      amount = oneOffTicketPrice;
       paymentMeta.ticketId = ticketId;
 
     } else if (paymentType === 'partial') {
+      // Сумму НЕ пересчитываем — берём totalPrice, который бэк посчитал
+      // один раз при создании заказа (routes/orders.js). Это и есть число,
+      // которое пользователь видел на кнопке "Оплатить 50%" на форме заказа.
       if (order.paid) return res.status(400).json({ error: 'order already paid' });
       if (order.paidAmount > 0) return res.status(400).json({ error: 'partial payment already made, use type=remaining' });
-      const total = await calcOrderTotal(order, { apiAsUser, token });
-      amount = Math.ceil(total / 2);
+      amount = Math.ceil(Number(order.totalPrice) / 2);
 
     } else if (paymentType === 'remaining') {
-      const paidAmount = order.paidAmount || 0;
-      const total = await calcOrderTotal(order, { apiAsUser, token });
-      amount = Math.max(0, total - paidAmount);
-      if (amount === 0) return res.status(400).json({ error: 'already fully paid' });
+      // Считаем от totalPrice - paidAmount, а не от отдельного поля
+      // remainingAmount: оно кэш, который пишется только в двух местах
+      // (создание half-заказа и вебхук partial-оплаты), и для старых
+      // заказов (миграция из Firestore и т.п.) может быть не заполнено
+      // достоверно. totalPrice/paidAmount — то, что реально гарантированно
+      // приведено в порядок этим же фиксом, поэтому надёжнее опираться на них.
+      const paidAmount = Number(order.paidAmount) || 0;
+      amount = Math.max(0, Number(order.totalPrice) - paidAmount);
+      if (amount <= 0) return res.status(400).json({ error: 'already fully paid' });
 
     } else {
       if (order.paid) return res.status(400).json({ error: 'order already paid' });
-      const total = await calcOrderTotal(order, { apiAsUser, token });
       const paidAmount = order.paidAmount || 0;
-      amount = Math.max(0, total - paidAmount);
+      amount = Math.max(0, Number(order.totalPrice) - paidAmount);
       if (amount === 0) return res.status(400).json({ error: 'already fully paid' });
     }
   } catch (err) {
